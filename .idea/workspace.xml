@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cb2017f1-335c-4099-981d-d3402639854f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="backup/gltfast-update" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Maurizio-dcl&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:decentraland/unity-gltf.git&quot;,
+    &quot;accountId&quot;: &quot;29983e21-f999-4c4e-8b59-057400d318e7&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Editor/Scripts/GltfAssetDependency.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/Scripts/GltfImporter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/UI/GltfImporter.uxml" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/UI/GltfImporter.uxml" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/UI/GltfImporter.uxml" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/UI/GltfImporter.uxml" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Editor/UI/GltfImporter.uxml" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/AnimationUtils.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/AnimationUtils.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/AnimationUtils.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/ExportJobs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Export/GltfWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Runtime/Scripts/Export/ImageExportBase.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Runtime/Scripts/Export/NormalImageExport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Extensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Extensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GameObjectInstantiator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GameObjectInstantiator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GameObjectInstantiator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GameObjectInstantiator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GameObjectInstantiator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/GltfImport.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/JsonParser.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/JsonParser.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/BuiltInMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/IMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/IMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/IMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/IMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/IMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/MaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/MaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/MaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/MaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/MaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/ShaderGraphMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/ShaderGraphMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/ShaderGraphMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/ShaderGraphMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Material/ShaderGraphMaterialGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Accessor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfAnimation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfAnimation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfAnimation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfAnimation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfAnimation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfCamera.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfCamera.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfCamera.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfCamera.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/GltfCamera.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/LightsPunctual.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/LightsPunctual.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/LightsPunctual.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/LightsPunctual.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/LightsPunctual.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Material.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Material.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Material.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Material.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/Runtime/Scripts/Schema/Material.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Runtime/Scripts/UriHelper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Users/nebi/Projects/unity-gltf/package.json" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="SWEA" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3COHICaJWeyLuEljAsw2H9Z9AEZ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "Cherry-picking in chore/gltfast-update",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cb2017f1-335c-4099-981d-d3402639854f" name="Changes" comment="" />
+      <created>1776249613390</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776249613390</updated>
+      <workItem from="1776249614621" duration="21177000" />
+    </task>
+    <task id="LOCAL-00001" summary="- Removed .pngs&#10;- Removed tracked extensions in .gitattributes&#10;- Removed references to images in documentation / code&#10;- Aligned README.md with our custom one">
+      <option name="closed" value="true" />
+      <created>1776336864893</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776336864893</updated>
+    </task>
+    <task id="LOCAL-00002" summary="- Removed .gitattributes&#10;- Uninstalled lfs and untracked files">
+      <option name="closed" value="true" />
+      <created>1776338749302</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1776338749302</updated>
+    </task>
+    <task id="LOCAL-00003" summary="- removed .gitattributes">
+      <option name="closed" value="true" />
+      <created>1776340121067</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1776340121067</updated>
+    </task>
+    <task id="LOCAL-00004" summary="- Removed .pngs and their references&#10;- Restored README.md from our repo">
+      <option name="closed" value="true" />
+      <created>1776340729773</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1776340729773</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="- Removed .pngs&#10;- Removed tracked extensions in .gitattributes&#10;- Removed references to images in documentation / code&#10;- Aligned README.md with our custom one" />
+    <MESSAGE value="- Removed .gitattributes&#10;- Uninstalled lfs and untracked files" />
+    <MESSAGE value="- removed .gitattributes" />
+    <MESSAGE value="- Removed .pngs and their references&#10;- Restored README.md from our repo" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Removed .pngs and their references&#10;- Restored README.md from our repo" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
