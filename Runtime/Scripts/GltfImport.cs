@@ -2700,7 +2700,8 @@ namespace GLTFast
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying) {
-                UnityEngine.Object.DestroyImmediate(obj);
+                if (!AssetDatabase.Contains(obj))
+                    UnityEngine.Object.DestroyImmediate(obj);
             }
             else
 #endif
