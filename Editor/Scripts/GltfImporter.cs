@@ -75,7 +75,6 @@ namespace GLTFast.Editor
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
-
             reportItems = null;
 
             var downloadProvider = new EditorDownloadProvider();
@@ -86,7 +85,7 @@ namespace GLTFast.Editor
                 new UninterruptedDeferAgent(),
                 null,
                 logger
-                );
+            );
 
             if (editorImportSettings == null)
             {
@@ -127,7 +126,9 @@ namespace GLTFast.Editor
                     // setting.
 
                     instantiationSettings.SceneObjectCreation = SceneObjectCreation.WhenMultipleRootNodes;
-                    Debug.LogWarning("SceneObjectCreation setting \"Never\" is not available for Editor (design-time) imports. Falling back to WhenMultipleRootNodes.", this);
+                    Debug.LogWarning(
+                        "SceneObjectCreation setting \"Never\" is not available for Editor (design-time) imports. Falling back to WhenMultipleRootNodes.",
+                        this);
                 }
 
                 instantiationLogger = new CollectingLogger();
@@ -153,7 +154,7 @@ namespace GLTFast.Editor
                             catch (InvalidOperationException)
                             {
                                 instantiationLogger.Error($"Failed creating scene {sceneIndex} materials variant " +
-                                    $"{variantIndex} instance.");
+                                                          $"{variantIndex} instance.");
                             }
                         }
                     }
@@ -204,29 +205,18 @@ namespace GLTFast.Editor
                         {
                             continue;
                         }
+
                         if (editorImportSettings.generateSecondaryUVSet && !HasSecondaryUVs(mesh))
                         {
                             Unwrapping.GenerateSecondaryUVSet(mesh);
                         }
+
                         AddObjectToAsset(ctx, $"meshes/{mesh.name}", mesh);
                     }
                 }
 
 #if UNITY_ANIMATION
-                var clips = m_Gltf.GetAnimationClips();
-                if (clips != null) {
-                    foreach (var animationClip in clips) {
-                        if (animationClip == null) {
-                            continue;
-                        }
-                        if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
-                            var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
-                            settings.loopTime = true;
-                            AnimationUtility.SetAnimationClipSettings (animationClip, settings);
-                        }
-                        AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
-                    }
-                }
+                CreateAnimationClips(ctx);
 
                 // TODO seems the states don't properly connect to the Animator here
                 // (would need to be saved as SubAssets of the AnimatorController)
@@ -278,6 +268,7 @@ namespace GLTFast.Editor
             {
                 reportItemList.AddRange(logger.Items);
             }
+
             if (instantiationLogger?.Items != null)
             {
                 reportItemList.AddRange(instantiationLogger.Items);
@@ -287,9 +278,28 @@ namespace GLTFast.Editor
             {
                 Debug.LogError($"Failed to import {assetPath} (see inspector for details)", this);
             }
+
             reportItems = reportItemList.ToArray();
 
             m_Gltf.DisposeRequiredForInstantiationData();
+        }
+
+        protected virtual void CreateAnimationClips(AssetImportContext ctx)
+        {
+            var clips = m_Gltf.GetAnimationClips();
+            if (clips != null) {
+                foreach (var animationClip in clips) {
+                    if (animationClip == null) {
+                        continue;
+                    }
+                    if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
+                        var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
+                        settings.loopTime = true;
+                        AnimationUtility.SetAnimationClipSettings (animationClip, settings);
+                    }
+                    AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
+                }
+            }
         }
 
         void ImportScene(
