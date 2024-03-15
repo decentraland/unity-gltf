@@ -106,7 +106,6 @@ namespace GLTFast.Editor
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
-
             reportItems = null;
 
             var downloadProvider = customDownloadProvider ?? new EditorDownloadProvider(assetDependencies);
@@ -240,20 +239,7 @@ namespace GLTFast.Editor
                 }
 
 #if UNITY_ANIMATION
-                var clips = m_Gltf.GetAnimationClips();
-                if (clips != null) {
-                    foreach (var animationClip in clips) {
-                        if (animationClip == null) {
-                            continue;
-                        }
-                        if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
-                            var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
-                            settings.loopTime = true;
-                            AnimationUtility.SetAnimationClipSettings (animationClip, settings);
-                        }
-                        AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
-                    }
-                }
+                CreateAnimationClips(ctx);
 
                 // TODO seems the states don't properly connect to the Animator here
                 // (would need to be saved as SubAssets of the AnimatorController)
@@ -316,6 +302,24 @@ namespace GLTFast.Editor
                 Debug.LogError($"Failed to import {assetPath} (see inspector for details)", this);
             }
             reportItems = reportItemList.ToArray();
+        }
+
+        protected virtual void CreateAnimationClips(AssetImportContext ctx)
+        {
+            var clips = m_Gltf.GetAnimationClips();
+            if (clips != null) {
+                foreach (var animationClip in clips) {
+                    if (animationClip == null) {
+                        continue;
+                    }
+                    if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
+                        var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
+                        settings.loopTime = true;
+                        AnimationUtility.SetAnimationClipSettings (animationClip, settings);
+                    }
+                    AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
+                }
+            }
         }
 
         protected virtual void PreProcessGameObjects(GameObject sceneGo)
