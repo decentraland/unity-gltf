@@ -174,7 +174,7 @@ namespace GLTFast {
             Profiler.BeginSample("AnimationUtils.AddMorphTargetWeightCurves");
             int morphTargetCount;
             if (morphTargetNames == null) {
-                morphTargetCount = values.Length / times.Length;
+                morphTargetCount = times.Length > 0 ? values.Length / times.Length : 0;
                 if (interpolationType == InterpolationType.CubicSpline) {
                     // 3 values per key (in-tangent, out-tangent and value)
                     morphTargetCount /= 3;
