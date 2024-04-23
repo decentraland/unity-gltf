@@ -1519,6 +1519,9 @@ namespace GLTFast
         {
             Profiler.BeginSample("LoadGltfBinary.Phase1");
 
+            if (bytes is null or { Length: 0 })
+                throw new FileLoadException();
+
             if (!GltfGlobals.IsGltfBinary(bytes))
             {
                 m_Logger?.Error(LogCode.GltfNotBinary);
