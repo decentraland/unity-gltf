@@ -1469,8 +1469,7 @@ namespace GLTFast
 
             if (Root == null)
             {
-                Debug.LogError("JsonParsingFailed");
-                Logger?.Error(LogCode.JsonParsingFailed);
+                m_Logger?.Error(LogCode.JsonParsingFailed);
                 return false;
             }
 
@@ -3225,7 +3224,7 @@ namespace GLTFast
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying) {
-                if (!AssetDatabase.Contains(obj))
+                if (!EditorUtility.IsPersistent(obj))
                     UnityEngine.Object.DestroyImmediate(obj);
             }
             else
