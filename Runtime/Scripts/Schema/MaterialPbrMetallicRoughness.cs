@@ -1,31 +1,42 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GLTFast.Schema
 {
+    /// <inheritdoc />
+    [Serializable]
+    public class PbrMetallicRoughness : PbrMetallicRoughnessBase<TextureInfo> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TTextureInfo">textureInfo type</typeparam>
+    [Serializable]
+    public abstract class PbrMetallicRoughnessBase<TTextureInfo> : PbrMetallicRoughnessBase
+        where TTextureInfo : TextureInfoBase
+    {
+        /// <inheritdoc cref="BaseColorTexture"/>
+        public TTextureInfo baseColorTexture;
+
+        /// <inheritdoc cref="MetallicRoughnessTexture"/>
+        public TTextureInfo metallicRoughnessTexture;
+
+        /// <inheritdoc />
+        public override TextureInfoBase BaseColorTexture => baseColorTexture;
+
+        /// <inheritdoc />
+        public override TextureInfoBase MetallicRoughnessTexture => metallicRoughnessTexture;
+    }
 
     /// <summary>
     /// A set of parameter values that are used to define the metallic-roughness
     /// material model from Physically-Based Rendering (PBR) methodology.
     /// </summary>
     [Serializable]
-    public class PbrMetallicRoughness
+    public abstract class PbrMetallicRoughnessBase
     {
 
         /// <summary>
@@ -60,7 +71,7 @@ namespace GLTFast.Schema
         /// If the fourth component (A) is present, it represents the opacity of the
         /// material. Otherwise, an opacity of 1.0 is assumed.
         /// </summary>
-        public TextureInfo baseColorTexture;
+        public abstract TextureInfoBase BaseColorTexture { get; }
 
         /// <summary>
         /// The metalness of the material.
@@ -88,7 +99,7 @@ namespace GLTFast.Schema
         /// If the third component (B) and/or the fourth component (A) are present,
         /// they are ignored.
         /// </summary>
-        public TextureInfo metallicRoughnessTexture;
+        public abstract TextureInfoBase MetallicRoughnessTexture { get; }
 
         internal void GltfSerialize(JsonWriter writer)
         {
@@ -111,15 +122,15 @@ namespace GLTFast.Schema
             {
                 writer.AddProperty("roughnessFactor", roughnessFactor);
             }
-            if (baseColorTexture != null)
+            if (BaseColorTexture != null)
             {
                 writer.AddProperty("baseColorTexture");
-                baseColorTexture.GltfSerialize(writer);
+                BaseColorTexture.GltfSerialize(writer);
             }
-            if (metallicRoughnessTexture != null)
+            if (MetallicRoughnessTexture != null)
             {
                 writer.AddProperty("metallicRoughnessTexture");
-                metallicRoughnessTexture.GltfSerialize(writer);
+                MetallicRoughnessTexture.GltfSerialize(writer);
             }
 
             writer.Close();

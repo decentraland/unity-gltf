@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -66,7 +54,9 @@ namespace GLTFast
                 buffers.GetAccessor(accIndex, out var uvAcc, out var data, out var byteStride);
                 if (uvAcc.IsSparse)
                 {
-                    m_Logger.Error(LogCode.SparseAccessor, "UVs");
+                    m_Logger?.Error(LogCode.SparseAccessor, "UVs");
+                    Profiler.EndSample();
+                    return false;
                 }
                 var h = GetUvsJob(
                     data,
@@ -140,11 +130,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = jobUv.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = jobUv.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = jobUv.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     break;
                 case GltfComponentType.UnsignedByte:
@@ -157,7 +143,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-                        jobHandle = jobUv.Schedule(count, GltfImport.DefaultBatchCount);
+                        jobHandle = jobUv.Schedule(count, GltfImportBase.DefaultBatchCount);
                     }
                     else
                     {
@@ -168,11 +154,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = jobUv.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = jobUv.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = jobUv.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     break;
                 case GltfComponentType.UnsignedShort:
@@ -185,7 +167,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-                        jobHandle = jobUv.Schedule(count, GltfImport.DefaultBatchCount);
+                        jobHandle = jobUv.Schedule(count, GltfImportBase.DefaultBatchCount);
                     }
                     else
                     {
@@ -196,11 +178,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = jobUv.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = jobUv.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = jobUv.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     break;
                 case GltfComponentType.Short:
@@ -213,11 +191,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = job.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = job.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = job.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     else
                     {
@@ -228,11 +202,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = job.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = job.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = job.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     break;
                 case GltfComponentType.Byte:
@@ -245,11 +215,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = jobInt8.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = jobInt8.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = jobInt8.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     else
                     {
@@ -260,11 +226,7 @@ namespace GLTFast
                             outputByteStride = outputByteStride,
                             result = output
                         };
-#if UNITY_JOBS
-                    jobHandle = jobInt8.ScheduleBatch(count,GltfImport.DefaultBatchCount);
-#else
-                        jobHandle = jobInt8.Schedule(count, GltfImport.DefaultBatchCount);
-#endif
+                        jobHandle = jobInt8.ScheduleBatch(count, GltfImportBase.DefaultBatchCount);
                     }
                     break;
                 default:

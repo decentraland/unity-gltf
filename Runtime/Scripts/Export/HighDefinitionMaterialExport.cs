@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 #if USING_HDRP
 
@@ -41,6 +29,8 @@ namespace GLTFast.Export {
         static readonly int k_SmoothnessRemapMax = Shader.PropertyToID("_SmoothnessRemapMax");
         static readonly int k_SmoothnessRemapMin = Shader.PropertyToID("_SmoothnessRemapMin");
         static readonly int k_UnlitColor = Shader.PropertyToID("_UnlitColor");
+        static readonly int k_CoatMask = Shader.PropertyToID("_CoatMask");
+        static readonly int k_CoatMaskMap = Shader.PropertyToID("_CoatMaskMap");
 
         /// <summary>
         /// Converts a Unity material to a glTF material.
@@ -61,7 +51,7 @@ namespace GLTFast.Export {
             };
 
             SetAlphaModeAndCutoff(uMaterial, material);
-            material.doubleSided = IsDoubleSided(uMaterial, MaterialGenerator.CullModeProperty);
+            material.doubleSided = IsDoubleSided(uMaterial, MaterialProperty.CullMode);
 
             //
             // Emission
@@ -116,6 +106,34 @@ namespace GLTFast.Export {
                 }
             }
 
+            //
+            // Clearcoat
+            //
+            if (uMaterial.HasProperty(k_CoatMask) && uMaterial.GetFloat(k_CoatMask) > 0)
+            {
+                gltf.RegisterExtensionUsage(Extension.MaterialsClearcoat);
+                material.extensions = material.extensions ?? new MaterialExtensions();
+                material.extensions.KHR_materials_clearcoat = new ClearCoat();
+                material.extensions.KHR_materials_clearcoat.clearcoatFactor = uMaterial.GetFloat(k_CoatMask);
+
+                if (uMaterial.HasProperty(k_CoatMaskMap))
+                {
+                    var coatMaskTex = uMaterial.GetTexture(k_CoatMaskMap);
+                    if (coatMaskTex != null)
+                    {
+                        if (coatMaskTex is Texture2D)
+                        {
+                            material.extensions.KHR_materials_clearcoat.clearcoatTexture = ExportTextureInfo(coatMaskTex, gltf);
+                            ExportTextureTransform(material.extensions.KHR_materials_clearcoat.clearcoatTexture, uMaterial, k_CoatMaskMap, gltf);
+                        }
+                        else
+                        {
+                            logger?.Error(LogCode.TextureInvalidType, "clearcoat", material.name);
+                            success = false;
+                        }
+                    }
+                }
+            }
 
             var mainTexProperty = uMaterial.HasProperty(k_BaseColorMap) ? k_BaseColorMap : MainTexProperty;
 
@@ -158,7 +176,7 @@ namespace GLTFast.Export {
                 if (mainTex) {
                     if(mainTex is Texture2D) {
                         pbr.baseColorTexture = ExportTextureInfo(mainTex, gltf,
-                            material.GetAlphaMode() == Material.AlphaMode.Opaque
+                            material.GetAlphaMode() == MaterialBase.AlphaMode.Opaque
                                 ? ImageFormat.Jpg
                                 : ImageFormat.Unknown
                             );
@@ -208,7 +226,7 @@ namespace GLTFast.Export {
 
                     if ( metallicUsed || occUsed || smoothnessUsed ) {
                         ormImageExport = new MaskMapImageExport(maskMap);
-                        if (AddImageExport(gltf, ormImageExport, out var ormTextureId)) {
+                        if (MaterialExport.AddImageExport(gltf, ormImageExport, out var ormTextureId)) {
 
                             if (metallicUsed || smoothnessUsed) {
                                 pbr.metallicRoughnessTexture = new TextureInfo {
@@ -240,10 +258,10 @@ namespace GLTFast.Export {
 
             if (uMaterial.HasProperty(BaseColorProperty))
             {
-                pbr.BaseColor = uMaterial.GetColor(BaseColorProperty);
+                pbr.BaseColor = uMaterial.GetColor(BaseColorProperty).linear;
             } else
             if (uMaterial.HasProperty(ColorProperty)) {
-                pbr.BaseColor = uMaterial.GetColor(ColorProperty);
+                pbr.BaseColor = uMaterial.GetColor(ColorProperty).linear;
             }
 
             if(ormImageExport == null && uMaterial.HasProperty(SmoothnessProperty)) {

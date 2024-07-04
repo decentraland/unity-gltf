@@ -1,17 +1,5 @@
-// Copyright 2020 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 // Based on Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
@@ -228,7 +216,7 @@ inline FragmentCommonData SpecularSetup (
 #else
     half4 specGloss = SpecularGloss(i_tex);
 #endif
-    
+
     half3 specColor = specGloss.rgb;
     half smoothness = specGloss.a;
 
@@ -437,7 +425,7 @@ struct VertexOutputForwardBase
 #ifdef _EMISSION
     float2 texEmission                  : TEXCOORD10;
 #endif
-    
+
     half4 color                         : COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -473,7 +461,7 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     #ifdef _METALLICGLOSSMAP
     o.texORM.zw = TexCoordsSingle((metallicRoughnessTexture_texCoord==0)?v.uv0:v.uv1,metallicRoughnessTexture);
     #elif defined(_SPECGLOSSMAP)
-    o.texORM.zw = TexCoordsSingle((specularGlossinessTexture_texCoord==0)?v.uv0:v.uv1,specularGlossinessTexture);    
+    o.texORM.zw = TexCoordsSingle((specularGlossinessTexture_texCoord==0)?v.uv0:v.uv1,specularGlossinessTexture);
     #endif
     #ifdef _EMISSION
     o.texEmission = TexCoordsSingle((emissiveTexture_texCoord==0)?v.uv0:v.uv1,emissiveTexture);
@@ -530,7 +518,7 @@ half4 fragForwardBaseInternal (VertexOutputForwardBase i)
     UnityLight mainLight = MainLight ();
     UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld);
 
-    half occlusion = 
+    half occlusion =
 #ifdef _OCCLUSION
         Occlusion(i.texORM.xy);
 #else
@@ -578,7 +566,7 @@ struct VertexOutputForwardAdd
 #ifdef _EMISSION
     float2 texEmission                  : TEXCOORD10;
 #endif
-    
+
     half4 color                         : COLOR;
 
     UNITY_VERTEX_OUTPUT_STEREO
@@ -604,7 +592,7 @@ VertexOutputForwardAdd vertForwardAdd (VertexInput v)
     #ifdef _METALLICGLOSSMAP
     o.texORM.zw = TexCoordsSingle((metallicRoughnessTexture_texCoord==0)?v.uv0:v.uv1,metallicRoughnessTexture);
     #elif defined(_SPECGLOSSMAP)
-    o.texORM.zw = TexCoordsSingle((specularGlossinessTexture_texCoord==0)?v.uv0:v.uv1,specularGlossinessTexture);    
+    o.texORM.zw = TexCoordsSingle((specularGlossinessTexture_texCoord==0)?v.uv0:v.uv1,specularGlossinessTexture);
     #endif
     #ifdef _EMISSION
     o.texEmission = TexCoordsSingle((emissiveTexture_texCoord==0)?v.uv0:v.uv1,emissiveTexture);
@@ -725,7 +713,7 @@ VertexOutputDeferred vertDeferred (VertexInput v)
     #endif
     o.pos = UnityObjectToClipPos(v.vertex);
 
-    
+
     o.tex.xy = TexCoordsSingle((baseColorTexture_texCoord==0)?v.uv0:v.uv1,baseColorTexture);
     #ifdef _NORMALMAP
     o.tex.zw = TexCoordsSingle((normalTexture_texCoord==0)?v.uv0:v.uv1,normalTexture);

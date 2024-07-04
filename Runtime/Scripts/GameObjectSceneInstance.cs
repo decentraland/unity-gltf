@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using System.Collections.Generic;
@@ -33,6 +21,11 @@ namespace GLTFast
         /// List of instantiated lights
         /// </summary>
         public IReadOnlyList<Light> Lights => m_Lights;
+
+        /// <summary>
+        /// Enables controlling and applying materials variants.
+        /// </summary>
+        public MaterialsVariantsControl MaterialsVariantsControl { get; private set; }
 
 #if UNITY_ANIMATION
         /// <summary>
@@ -66,6 +59,11 @@ namespace GLTFast
                 m_Lights = new List<Light>();
             }
             m_Lights.Add(light);
+        }
+
+        internal void SetMaterialsVariantsControl(MaterialsVariantsControl control)
+        {
+            MaterialsVariantsControl = control;
         }
 
 #if UNITY_ANIMATION

@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using System.Threading.Tasks;
@@ -47,7 +35,7 @@ namespace GLTFast.Loading
         /// <param name="nonReadable">If true, resulting texture is not CPU readable (uses less memory)</param>
         /// <returns>Object representing the request</returns>
 #pragma warning disable CS1998
-        public async Task<ITextureDownload> RequestTexture(Uri url, bool nonReadable, bool forceLinear)
+        public async Task<ITextureDownload> RequestTexture(Uri url, bool nonReadable)
         {
 #pragma warning restore CS1998
 #if UNITY_WEBREQUEST_TEXTURE
@@ -113,11 +101,7 @@ namespace GLTFast.Loading
         /// <summary>
         /// True if the download finished and was successful
         /// </summary>
-#if UNITY_2020_1_OR_NEWER
-        public bool Success => m_Request!=null && m_Request.isDone && m_Request.result == UnityWebRequest.Result.Success;
-#else
-        public bool Success => m_Request != null && m_Request.isDone && !m_Request.isNetworkError && !m_Request.isHttpError;
-#endif
+        public bool Success => m_Request != null && m_Request.isDone && m_Request.result == UnityWebRequest.Result.Success;
 
         /// <summary>
         /// If the download failed, error description
@@ -202,10 +186,7 @@ namespace GLTFast.Loading
         }
 
         /// <inheritdoc />
-        public IDisposableTexture GetTexture(bool linear)
-        {
-            return (m_Request?.downloadHandler as DownloadHandlerTexture)?.texture.ToDisposableTexture();
-        }
+        public Texture2D Texture => (m_Request?.downloadHandler as  DownloadHandlerTexture )?.texture;
     }
 #endif
 }

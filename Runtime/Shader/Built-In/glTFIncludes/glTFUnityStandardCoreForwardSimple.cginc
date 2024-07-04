@@ -1,17 +1,5 @@
-// Copyright 2020 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 // Based on Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
@@ -110,14 +98,15 @@ VertexOutputBaseSimple vertForwardBaseSimple (VertexInput v)
 {
     UNITY_SETUP_INSTANCE_ID(v);
     VertexOutputBaseSimple o;
+    UNITY_INITIALIZE_OUTPUT(VertexOutputBaseSimple, o);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
 #ifdef UNITY_COLORSPACE_GAMMA
     o.color.rgb = LinearToGammaSpace(v.color.rgb);
     o.color.a = v.color.a;
 #else
     o.color = v.color;
 #endif
-    UNITY_INITIALIZE_OUTPUT(VertexOutputBaseSimple, o);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
     float4 posWorld = mul(unity_ObjectToWorld, v.vertex);
     o.pos = UnityObjectToClipPos(v.vertex);
@@ -162,13 +151,13 @@ FragmentCommonData FragmentSetupSimple(VertexOutputBaseSimple i)
         clip (alpha - alphaCutoff);
     #endif
 
-    
+
 #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
     FragmentCommonData s = UNITY_SETUP_BRDF_INPUT (i.tex,i.texORM.zw,i.color);
 #else
     FragmentCommonData s = UNITY_SETUP_BRDF_INPUT (i.tex,i.color);
 #endif
-    
+
     // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
     s.diffColor = PreMultiplyAlpha (s.diffColor, alpha, s.oneMinusReflectivity, /*out*/ s.alpha);
 
@@ -364,7 +353,7 @@ FragmentCommonData FragmentSetupSimpleAdd(VertexOutputForwardAddSimple i)
     #if defined(_ALPHATEST_ON)
         clip (alpha - alphaCutoff);
     #endif
-   
+
 #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
     FragmentCommonData s = UNITY_SETUP_BRDF_INPUT (i.tex,i.texORM.zw,i.color);
 #else

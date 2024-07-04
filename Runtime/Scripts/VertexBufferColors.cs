@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -59,7 +47,7 @@ namespace GLTFast
             buffers.GetAccessor(colorAccessorIndex, out var colorAcc, out var data, out var byteStride);
             if (colorAcc.IsSparse)
             {
-                m_Logger.Error(LogCode.SparseAccessor, "color");
+                m_Logger?.Error(LogCode.SparseAccessor, "color");
             }
             m_Data = new NativeArray<float4>(colorAcc.count, VertexBufferConfigBase.defaultAllocator);
             Profiler.EndSample();
@@ -127,7 +115,7 @@ namespace GLTFast
                                 inputByteStride = inputByteStride > 0 ? inputByteStride : 3,
                                 result = output
                             };
-                            jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
+                            jobHandle = job.Schedule(output.Length, GltfImportBase.DefaultBatchCount);
                         }
                         break;
                     case GltfComponentType.Float:
@@ -138,7 +126,7 @@ namespace GLTFast
                                 inputByteStride = inputByteStride > 0 ? inputByteStride : 12,
                                 result = (float4*)output.GetUnsafePtr()
                             };
-                            jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
+                            jobHandle = job.Schedule(output.Length, GltfImportBase.DefaultBatchCount);
                         }
                         break;
                     case GltfComponentType.UnsignedShort:
@@ -149,7 +137,7 @@ namespace GLTFast
                                 inputByteStride = inputByteStride > 0 ? inputByteStride : 6,
                                 result = output
                             };
-                            jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
+                            jobHandle = job.Schedule(output.Length, GltfImportBase.DefaultBatchCount);
                         }
                         break;
                     default:
@@ -169,7 +157,7 @@ namespace GLTFast
                                 inputByteStride = inputByteStride > 0 ? inputByteStride : 4,
                                 result = output
                             };
-                            jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
+                            jobHandle = job.Schedule(output.Length, GltfImportBase.DefaultBatchCount);
                         }
                         break;
                     case GltfComponentType.Float:
@@ -192,11 +180,7 @@ namespace GLTFast
                                     inputByteStride = inputByteStride,
                                     result = (float4*)output.GetUnsafePtr()
                                 };
-#if UNITY_JOBS
-                                jobHandle = job.ScheduleBatch(output.Length,GltfImport.DefaultBatchCount);
-#else
-                                jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
-#endif
+                                jobHandle = job.ScheduleBatch(output.Length, GltfImportBase.DefaultBatchCount);
                             }
                         }
                         break;
@@ -208,11 +192,7 @@ namespace GLTFast
                                 inputByteStride = inputByteStride > 0 ? inputByteStride : 8,
                                 result = (float4*)output.GetUnsafePtr()
                             };
-#if UNITY_JOBS
-                            jobHandle = job.ScheduleBatch(output.Length,GltfImport.DefaultBatchCount);
-#else
-                            jobHandle = job.Schedule(output.Length, GltfImport.DefaultBatchCount);
-#endif
+                            jobHandle = job.ScheduleBatch(output.Length, GltfImportBase.DefaultBatchCount);
                         }
                         break;
                     default:

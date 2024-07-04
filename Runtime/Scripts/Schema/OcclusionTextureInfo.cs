@@ -1,38 +1,45 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using Unity.Mathematics;
 
 namespace GLTFast.Schema
 {
+    /// <inheritdoc />
+    [System.Serializable]
+    public class OcclusionTextureInfo : OcclusionTextureInfoBase<TextureInfoExtensions> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TExtensions">occlusionTextureInfo extensions type</typeparam>
+    [System.Serializable]
+    public abstract class OcclusionTextureInfoBase<TExtensions> : OcclusionTextureInfoBase
+        where TExtensions : TextureInfoExtensions, new()
+    {
+        /// <inheritdoc cref="Extensions"/>
+        public TExtensions extensions;
+
+        /// <inheritdoc />
+        public override TextureInfoExtensions Extensions => extensions;
+
+        internal override void SetTextureTransform(TextureTransform textureTransform)
+        {
+            extensions = extensions ?? new TExtensions();
+            extensions.KHR_texture_transform = textureTransform;
+        }
+    }
 
     /// <summary>
     /// Occlusion map specific texture info
     /// </summary>
     [System.Serializable]
-    public class OcclusionTextureInfo : TextureInfo
+    public abstract class OcclusionTextureInfoBase : TextureInfoBase
     {
-
         /// <summary>
         /// A scalar multiplier controlling the amount of occlusion applied.
         /// A value of 0.0 means no occlusion.
         /// A value of 1.0 means full occlusion.
         /// This value is ignored if the corresponding texture is not specified.
         /// This value is linear.
-        /// <minimum>0.0</minimum>
-        /// <maximum>1.0</maximum>
         /// </summary>
         public float strength = 1.0f;
 

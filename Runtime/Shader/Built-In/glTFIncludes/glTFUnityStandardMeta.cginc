@@ -1,17 +1,5 @@
-// Copyright 2020 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 // Based on Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
@@ -55,7 +43,7 @@ v2f_meta vert_meta (VertexInput v)
 #else
     o.uv.zw = float2(0,0);
 #endif
-    
+
 #ifdef EDITOR_VISUALIZATION
     o.vizUV = 0;
     o.lightCoord = 0;
@@ -85,14 +73,14 @@ float4 frag_meta (v2f_meta i) : SV_Target
 {
     // we're interested in diffuse & specular colors,
     // and surface roughness to produce final albedo.
-    
+
 #ifdef _METALLICGLOSSMAP
     FragmentCommonData data = UNITY_SETUP_BRDF_INPUT (i.uv,i.uv,i.color);
 #else
     FragmentCommonData data = UNITY_SETUP_BRDF_INPUT (i.uv,i.color);
 #endif
 
-    
+
     UnityMetaInput o;
     UNITY_INITIALIZE_OUTPUT(UnityMetaInput, o);
 

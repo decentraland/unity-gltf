@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 
@@ -20,8 +8,8 @@ namespace GLTFast.Schema
 
     /// <summary>
     /// The topology type of primitives to render
-    /// <seealso href="https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode"/>
     /// </summary>
+    /// <seealso href="https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode"/>
     public enum DrawMode
     {
         /// <summary>Points</summary>
@@ -40,11 +28,34 @@ namespace GLTFast.Schema
         TriangleFan = 6
     }
 
+    /// <inheritdoc />
+    [Serializable]
+    public class MeshPrimitive : MeshPrimitiveBase<MeshPrimitiveExtensions> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TExtensions">Mesh primitive extensions type</typeparam>
+    [Serializable]
+    public class MeshPrimitiveBase<TExtensions> : MeshPrimitiveBase
+    where TExtensions : MeshPrimitiveExtensions
+    {
+        /// <inheritdoc cref="Extensions"/>
+        public TExtensions extensions;
+
+        /// <inheritdoc />
+        public override MeshPrimitiveExtensions Extensions => extensions;
+
+        /// <inheritdoc />
+        internal override void UnsetExtensions()
+        {
+            extensions = null;
+        }
+    }
+
     /// <summary>
     /// Geometry to be rendered with the given material.
     /// </summary>
     [Serializable]
-    public class MeshPrimitive : ICloneable
+    public abstract class MeshPrimitiveBase : ICloneable, IMaterialsVariantsSlot
     {
 
         /// <summary>
@@ -85,10 +96,26 @@ namespace GLTFast.Schema
         public MorphTarget[] targets;
 
         /// <inheritdoc cref="MeshPrimitiveExtensions"/>
-        public MeshPrimitiveExtensions extensions;
+        public abstract MeshPrimitiveExtensions Extensions { get; }
+
+        /// <inheritdoc />
+        public int GetMaterialIndex(int variantIndex)
+        {
+            var mapping = Extensions?.KHR_materials_variants;
+            if (mapping != null && mapping.TryGetMaterialIndex(variantIndex, out var materialIndex))
+            {
+                return materialIndex;
+            }
+            return material;
+        }
+
+        /// <summary>`
+        /// Sets <see cref="Extensions"/> to null.
+        /// </summary>
+        internal abstract void UnsetExtensions();
 
 #if DRACO_UNITY
-        public bool IsDracoCompressed => extensions!=null && extensions.KHR_draco_mesh_compression != null;
+        public bool IsDracoCompressed => Extensions!=null && Extensions.KHR_draco_mesh_compression != null;
 #endif
 
         /// <summary>
@@ -105,7 +132,7 @@ namespace GLTFast.Schema
             {
                 return false;
             }
-            var b = (MeshPrimitive)obj;
+            var b = (MeshPrimitiveBase)obj;
 
             if (attributes.Equals(b.attributes))
             {
@@ -179,9 +206,10 @@ namespace GLTFast.Schema
                 }
                 writer.CloseArray();
             }
-            if (extensions != null)
+            if (Extensions != null)
             {
-                extensions.GltfSerialize(writer);
+                writer.AddProperty("extensions");
+                Extensions.GltfSerialize(writer);
             }
             writer.Close();
         }
@@ -308,14 +336,25 @@ namespace GLTFast.Schema
         public MeshPrimitiveDracoExtension KHR_draco_mesh_compression;
 #endif
 
+        /// <inheritdoc cref="MaterialsVariantsMeshPrimitiveExtension"/>
+        // ReSharper disable once InconsistentNaming
+        public MaterialsVariantsMeshPrimitiveExtension KHR_materials_variants;
+
         internal void GltfSerialize(JsonWriter writer)
         {
+            writer.AddObject();
 #if DRACO_UNITY
             if (KHR_draco_mesh_compression != null) {
                 writer.AddProperty("KHR_draco_mesh_compression");
                 KHR_draco_mesh_compression.GltfSerialize(writer);
             }
 #endif
+            if (KHR_materials_variants != null)
+            {
+                writer.AddProperty("KHR_materials_variants");
+                KHR_materials_variants.GltfSerialize(writer);
+            }
+            writer.Close();
         }
     }
 
@@ -326,7 +365,11 @@ namespace GLTFast.Schema
         public Attributes attributes;
 
         internal void GltfSerialize(JsonWriter writer) {
-            throw new NotImplementedException($"GltfSerialize missing on {GetType()}");
+            writer.AddObject();
+            writer.AddProperty("bufferView", bufferView);
+            writer.AddProperty("attributes");
+            attributes.GltfSerialize(writer);
+            writer.Close();
         }
     }
 #endif
