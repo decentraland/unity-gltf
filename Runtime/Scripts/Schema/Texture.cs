@@ -1,28 +1,32 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 
 namespace GLTFast.Schema
 {
+    /// <inheritdoc />
+    [Serializable]
+    public class Texture : TextureBase<TextureExtensions> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TExtensions">Texture extensions type</typeparam>
+    [Serializable]
+    public abstract class TextureBase<TExtensions> : TextureBase
+    where TExtensions : TextureExtensions
+    {
+        /// <inheritdoc cref="Extensions"/>
+        public TExtensions extensions;
+
+        /// <inheritdoc />
+        public override TextureExtensions Extensions => extensions;
+    }
 
     /// <summary>
     /// A texture is defined by an image and a sampler.
     /// </summary>
     [Serializable]
-    public class Texture : NamedObject
+    public abstract class TextureBase : NamedObject
     {
 
         /// <summary>
@@ -35,8 +39,8 @@ namespace GLTFast.Schema
         /// </summary>
         public int source = -1;
 
-        /// <inheritdoc cref="TextureExtension"/>
-        public TextureExtension extensions;
+        /// <inheritdoc cref="TextureExtensions"/>
+        public abstract TextureExtensions Extensions { get; }
 
         /// <summary>
         /// Retrieves the final image index.
@@ -44,11 +48,11 @@ namespace GLTFast.Schema
         /// <returns>Final image index</returns>
         public int GetImageIndex()
         {
-            if (extensions != null)
+            if (Extensions != null)
             {
-                if (extensions.KHR_texture_basisu != null && extensions.KHR_texture_basisu.source >= 0)
+                if (Extensions.KHR_texture_basisu != null && Extensions.KHR_texture_basisu.source >= 0)
                 {
-                    return extensions.KHR_texture_basisu.source;
+                    return Extensions.KHR_texture_basisu.source;
                 }
             }
             return source;
@@ -57,12 +61,12 @@ namespace GLTFast.Schema
         /// <summary>
         /// True, if the texture is of the KTX format.
         /// </summary>
-        public bool IsKtx => extensions?.KHR_texture_basisu != null;
+        public bool IsKtx => Extensions?.KHR_texture_basisu != null;
 
         internal void GltfSerialize(JsonWriter writer)
         {
             writer.AddObject();
-            GltfSerializeRoot(writer);
+            GltfSerializeName(writer);
             if (source >= 0)
             {
                 writer.AddProperty("source", source);
@@ -71,10 +75,10 @@ namespace GLTFast.Schema
             {
                 writer.AddProperty("sampler", sampler);
             }
-            if (extensions != null)
+            if (Extensions != null)
             {
                 writer.AddProperty("extensions");
-                extensions.GltfSerialize(writer);
+                Extensions.GltfSerialize(writer);
             }
             writer.Close();
         }
@@ -99,8 +103,8 @@ namespace GLTFast.Schema
             return source == other.source
                 && sampler == other.sampler
                 && (
-                    extensions == null && other.extensions == null
-                    || (extensions != null && extensions.Equals(other.extensions))
+                    Extensions == null && other.Extensions == null
+                    || (Extensions != null && Extensions.Equals(other.Extensions))
                 );
         }
 
@@ -111,12 +115,12 @@ namespace GLTFast.Schema
         public override int GetHashCode()
         {
 #if NET_STANDARD
-            return HashCode.Combine(source, sampler, extensions.GetHashCode());
+            return HashCode.Combine(source, sampler, Extensions.GetHashCode());
 #else
             var hash = 17;
             hash = hash * 31 + source;
             hash = hash * 31 + sampler;
-            hash = hash * 31 + extensions.GetHashCode();
+            hash = hash * 31 + Extensions.GetHashCode();
             return hash;
 #endif
         }

@@ -1,26 +1,39 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
+
+using UnityEngine.Serialization;
 
 namespace GLTFast.Schema
 {
+
+    /// <inheritdoc />
+    [System.Serializable]
+    public class TextureInfo : TextureInfoBase<TextureInfoExtensions> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TExtensions">textureInfo extensions type</typeparam>
+    [System.Serializable]
+    public abstract class TextureInfoBase<TExtensions> : TextureInfoBase
+        where TExtensions : TextureInfoExtensions, new()
+    {
+        /// <inheritdoc cref="Extensions"/>
+        public TExtensions extensions;
+
+        /// <inheritdoc />
+        public override TextureInfoExtensions Extensions => extensions;
+
+        internal override void SetTextureTransform(TextureTransform textureTransform)
+        {
+            extensions = extensions ?? new TExtensions();
+            extensions.KHR_texture_transform = textureTransform;
+        }
+    }
 
     /// <summary>
     /// Reference to a texture.
     /// </summary>
     [System.Serializable]
-    public class TextureInfo
+    public abstract class TextureInfoBase
     {
 
         /// <summary>
@@ -35,8 +48,15 @@ namespace GLTFast.Schema
         /// </summary>
         public int texCoord;
 
-        /// <inheritdoc cref="TextureInfoExtension"/>
-        public TextureInfoExtension extensions;
+        /// <inheritdoc cref="TextureInfoExtensions"/>
+        public abstract TextureInfoExtensions Extensions { get; }
+
+        /// <summary>
+        /// Applies a texture transform by initializing <see cref="Extensions" /> (if required) and setting its
+        /// <see cref="TextureInfoExtensions.KHR_texture_transform" /> field.
+        /// </summary>
+        /// <param name="textureTransform">Texture transform to apply.</param>
+        internal abstract void SetTextureTransform(TextureTransform textureTransform);
 
         internal void GltfSerializeTextureInfo(JsonWriter writer)
         {
@@ -49,10 +69,10 @@ namespace GLTFast.Schema
                 writer.AddProperty("texCoord", texCoord);
             }
 
-            if (extensions != null)
+            if (Extensions != null)
             {
                 writer.AddProperty("extensions");
-                extensions.GltfSerialize(writer);
+                Extensions.GltfSerialize(writer);
             }
         }
 

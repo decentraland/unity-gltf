@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +7,9 @@ using GLTFast.Schema;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Profiling;
+#if UNITY_ANIMATION
+using Animation = UnityEngine.Animation;
+#endif
 using Camera = UnityEngine.Camera;
 using Material = UnityEngine.Material;
 using Mesh = UnityEngine.Mesh;
@@ -66,6 +57,8 @@ namespace GLTFast
         /// </summary>
         protected Dictionary<uint, GameObject> m_Nodes;
 
+        List<IMaterialsVariantsSlotInstance> m_InstanceSlots;
+
         /// <summary>
         /// Transform representing the scene.
         /// Root nodes will get parented to it.
@@ -111,11 +104,8 @@ namespace GLTFast
             SceneInstance = new GameObjectSceneInstance();
 
             GameObject sceneGameObject;
-
-            var isSingleScene = rootNodeIndices is { Length: 1 };
-
             if (m_Settings.SceneObjectCreation == SceneObjectCreation.Never
-                || m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && isSingleScene)
+                || m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && rootNodeIndices.Length == 1)
             {
                 sceneGameObject = m_Parent.gameObject;
             }
@@ -213,6 +203,8 @@ namespace GLTFast
             go.transform.SetParent(
                 parentIndex.HasValue ? m_Nodes[parentIndex.Value].transform : SceneTransform,
                 false);
+
+            NodeCreated?.Invoke(nodeIndex, go);
         }
 
         /// <inheritdoc />
@@ -225,8 +217,7 @@ namespace GLTFast
         public virtual void AddPrimitive(
             uint nodeIndex,
             string meshName,
-            Mesh mesh,
-            int[] materialIndices,
+            MeshResult meshResult,
             uint[] joints = null,
             uint? rootJoint = null,
             float[] morphTargetWeights = null,
@@ -253,12 +244,12 @@ namespace GLTFast
 
             Renderer renderer;
 
-            var hasMorphTargets = mesh.blendShapeCount > 0;
+            var hasMorphTargets = meshResult.mesh.blendShapeCount > 0;
             if (joints == null && !hasMorphTargets)
             {
-                var mf = meshGo.AddComponent<MeshFilter>() ?? meshGo.GetComponent<MeshFilter>();
-                mf.mesh = mesh;
-                var mr = meshGo.AddComponent<MeshRenderer>() ?? meshGo.GetComponent<MeshRenderer>();
+                var mf = meshGo.AddComponent<MeshFilter>();
+                mf.mesh = meshResult.mesh;
+                var mr = meshGo.AddComponent<MeshRenderer>();
                 renderer = mr;
             }
             else
@@ -271,16 +262,15 @@ namespace GLTFast
                     for (var j = 0; j < bones.Length; j++)
                     {
                         var jointIndex = joints[j];
-                        if (!m_Nodes.ContainsKey(jointIndex)) continue;
                         bones[j] = m_Nodes[jointIndex].transform;
                     }
                     smr.bones = bones;
-                    if (rootJoint.HasValue && m_Nodes.ContainsKey(rootJoint.Value))
+                    if (rootJoint.HasValue)
                     {
                         smr.rootBone = m_Nodes[rootJoint.Value].transform;
                     }
                 }
-                smr.sharedMesh = mesh;
+                smr.sharedMesh = meshResult.mesh;
                 if (morphTargetWeights != null)
                 {
                     for (var i = 0; i < morphTargetWeights.Length; i++)
@@ -292,22 +282,40 @@ namespace GLTFast
                 renderer = smr;
             }
 
-            var materials = new Material[materialIndices.Length];
+            var materials = new Material[meshResult.materialIndices.Length];
             for (var index = 0; index < materials.Length; index++)
             {
-                var material = m_Gltf.GetMaterial(materialIndices[index]) ?? m_Gltf.GetDefaultMaterial();
+                var material = m_Gltf.GetMaterial(meshResult.materialIndices[index]) ?? m_Gltf.GetDefaultMaterial();
                 materials[index] = material;
             }
 
             renderer.sharedMaterials = materials;
+
+            var slots = m_Gltf.GetMaterialsVariantsSlots(meshResult.meshIndex, primitiveNumeration);
+            if (slots != null && slots.Length > 0)
+            {
+                m_InstanceSlots ??= new List<IMaterialsVariantsSlotInstance>();
+                var instanceSlot = new MaterialsVariantsSlotInstances(renderer, slots);
+                m_InstanceSlots.Add(instanceSlot);
+            }
+
+            MeshAdded?.Invoke(
+                meshGo,
+                nodeIndex,
+                meshName,
+                meshResult,
+                joints,
+                rootJoint,
+                morphTargetWeights,
+                primitiveNumeration
+                );
         }
 
         /// <inheritdoc />
         public virtual void AddPrimitiveInstanced(
             uint nodeIndex,
             string meshName,
-            Mesh mesh,
-            int[] materialIndices,
+            MeshResult meshResult,
             uint instanceCount,
             NativeArray<Vector3>? positions,
             NativeArray<Quaternion>? rotations,
@@ -320,13 +328,19 @@ namespace GLTFast
                 return;
             }
 
-            var materials = new Material[materialIndices.Length];
+            var materials = new Material[meshResult.materialIndices.Length];
             for (var index = 0; index < materials.Length; index++)
             {
-                var material = m_Gltf.GetMaterial(materialIndices[index]) ?? m_Gltf.GetDefaultMaterial();
+                var material = m_Gltf.GetMaterial(meshResult.materialIndices[index]) ?? m_Gltf.GetDefaultMaterial();
                 material.enableInstancing = true;
                 materials[index] = material;
             }
+
+            var slots = m_Gltf.GetMaterialsVariantsSlots(meshResult.meshIndex, primitiveNumeration);
+            var hasMaterialsVariants = slots != null && slots.Length > 0;
+            var renderers = hasMaterialsVariants
+                ? new Renderer[instanceCount]
+                : null;
 
             for (var i = 0; i < instanceCount; i++)
             {
@@ -339,9 +353,21 @@ namespace GLTFast
                 t.localScale = scales?[i] ?? Vector3.one;
 
                 var mf = meshGo.AddComponent<MeshFilter>();
-                mf.mesh = mesh;
+                mf.mesh = meshResult.mesh;
                 Renderer renderer = meshGo.AddComponent<MeshRenderer>();
                 renderer.sharedMaterials = materials;
+
+                if (hasMaterialsVariants)
+                {
+                    renderers[i] = renderer;
+                }
+            }
+
+            if (hasMaterialsVariants)
+            {
+                m_InstanceSlots ??= new List<IMaterialsVariantsSlotInstance>();
+                var instanceSlot = new MultiMaterialsVariantsSlotInstances(renderers, slots);
+                m_InstanceSlots.Add(instanceSlot);
             }
         }
 
@@ -356,7 +382,7 @@ namespace GLTFast
             switch (camera.GetCameraType())
             {
                 case Schema.Camera.Type.Orthographic:
-                    var o = camera.orthographic;
+                    var o = camera.Orthographic;
                     AddCameraOrthographic(
                         nodeIndex,
                         o.znear,
@@ -367,7 +393,7 @@ namespace GLTFast
                     );
                     break;
                 case Schema.Camera.Type.Perspective:
-                    var p = camera.perspective;
+                    var p = camera.Perspective;
                     AddCameraPerspective(
                         nodeIndex,
                         p.yfov,
@@ -524,6 +550,13 @@ namespace GLTFast
         public virtual void EndScene(uint[] rootNodeIndices)
         {
             Profiler.BeginSample("EndScene");
+
+            if (m_InstanceSlots != null)
+            {
+                var materialsVariantsControl = new MaterialsVariantsControl(m_Gltf, m_InstanceSlots);
+                SceneInstance.SetMaterialsVariantsControl(materialsVariantsControl);
+            }
+
             if (rootNodeIndices != null)
             {
                 foreach (var nodeIndex in rootNodeIndices)
@@ -531,7 +564,49 @@ namespace GLTFast
                     m_Nodes[nodeIndex].SetActive(true);
                 }
             }
+
+            EndSceneCompleted?.Invoke();
+
             Profiler.EndSample();
         }
+
+        /// <summary>
+        /// Information for when a node's GameObject has been created.
+        /// </summary>
+        /// <param name="nodeIndex">Index of the corresponding glTF node.</param>
+        /// <param name="gameObject">GameObject that was created.</param>
+        public delegate void NodeCreatedDelegate(
+            uint nodeIndex,
+            GameObject gameObject
+        );
+
+        /// <summary>
+        /// Provides information for when a mesh was added to a node GameObject
+        /// </summary>
+        /// <param name="gameObject">GameObject that holds the Msh.</param>
+        /// <param name="nodeIndex">Index of the node</param>
+        /// <param name="meshName">Mesh's name</param>
+        /// <param name="meshResult">The converted Mesh</param>
+        /// <param name="joints">If a skin was attached, the joint indices. Null otherwise</param>
+        /// <param name="rootJoint">Root joint node index, if present</param>
+        /// <param name="morphTargetWeights">Morph target weights, if present</param>
+        /// <param name="primitiveNumeration">Primitives are numerated per Node, starting with 0</param>
+        public delegate void MeshAddedDelegate(
+            GameObject gameObject,
+            uint nodeIndex,
+            string meshName,
+            MeshResult meshResult,
+            uint[] joints = null,
+            uint? rootJoint = null,
+            float[] morphTargetWeights = null,
+            int primitiveNumeration = 0
+        );
+
+        /// <summary>Invoked when a node's GameObject has been created.</summary>
+        public event NodeCreatedDelegate NodeCreated;
+        /// <summary>Invoked after a mesh was added to a node GameObject</summary>
+        public event MeshAddedDelegate MeshAdded;
+        /// <summary>Invoked after a scene has been instantiated.</summary>
+        public event Action EndSceneCompleted;
     }
 }

@@ -1,62 +1,74 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 namespace GLTFast
 {
 
     /// <summary>
-    /// <see href="https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#specifying-extensions">glTF Extensions</see>
+    /// <a href="https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#specifying-extensions">glTF Extensions</a>
     /// </summary>
     public enum Extension
     {
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md">KHR_draco_mesh_compression</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md">KHR_draco_mesh_compression</a> glTF extension
         /// </summary>
         DracoMeshCompression,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md">KHR_lights_punctual</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md">KHR_lights_punctual</a> glTF extension
         /// </summary>
         LightsPunctual,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness">KHR_materials_pbrSpecularGlossiness</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness">KHR_materials_pbrSpecularGlossiness</a> glTF extension
         /// </summary>
         MaterialsPbrSpecularGlossiness,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md">KHR_materials_transmission</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md">KHR_materials_transmission</a> glTF extension
         /// </summary>
         MaterialsTransmission,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md">KHR_materials_unlit</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md">KHR_materials_unlit</a> glTF extension
         /// </summary>
         MaterialsUnlit,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md">EXT_mesh_gpu_instancing</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md">EXT_mesh_gpu_instancing</a> glTF extension
         /// </summary>
         MeshGPUInstancing,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md">KHR_mesh_quantization</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md">KHR_mesh_quantization</a> glTF extension
         /// </summary>
         MeshQuantization,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu/README.md">KHR_texture_basisu</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu/README.md">KHR_texture_basisu</a> glTF extension
         /// </summary>
         TextureBasisUniversal,
         /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md">KHR_texture_transform</see> glTF extension
+        /// <a href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md">KHR_texture_transform</a> glTF extension
         /// </summary>
         TextureTransform,
+        /// <summary>
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_clearcoat">KHR_materials_clearcoat</a> glTF extension
+        /// </summary>
+        MaterialsClearcoat,
+        /// <summary>
+        /// <see href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_variants">KHR_materials_variants</see> glTF extension
+        /// </summary>
+        MaterialsVariants,
+        /// <summary>
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_meshopt_compression">EXT_meshopt_compression</a> glTF extension
+        /// </summary>
+        MeshoptCompression,
+        /// <summary>
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior">KHR_materials_ior</a> glTF extension
+        /// </summary>
+        MaterialsIor,
+        /// <summary>
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_sheen">KHR_materials_sheen</a> glTF extension
+        /// </summary>
+        MaterialsSheen,
+        /// <summary>
+        /// <a href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular">KHR_materials_specular</a> glTF extension
+        /// </summary>
+        MaterialsSpecular,
     }
 
     /// <summary>
@@ -64,46 +76,36 @@ namespace GLTFast
     /// </summary>
     public static class ExtensionName
     {
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md">KHR_draco_mesh_compression</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.DracoMeshCompression"/>
         public const string DracoMeshCompression = "KHR_draco_mesh_compression";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness">KHR_materials_pbrSpecularGlossiness</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MaterialsPbrSpecularGlossiness"/>
         public const string MaterialsPbrSpecularGlossiness = "KHR_materials_pbrSpecularGlossiness";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md">KHR_materials_transmission</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MaterialsTransmission"/>
         public const string MaterialsTransmission = "KHR_materials_transmission";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md">KHR_materials_unlit</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MaterialsUnlit"/>
         public const string MaterialsUnlit = "KHR_materials_unlit";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md">EXT_mesh_gpu_instancing</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MeshGPUInstancing"/>
         public const string MeshGPUInstancing = "EXT_mesh_gpu_instancing";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md">EXT_meshopt_compression</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MeshoptCompression"/>
         public const string MeshoptCompression = "EXT_meshopt_compression";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md">KHR_mesh_quantization</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.MeshQuantization"/>
         public const string MeshQuantization = "KHR_mesh_quantization";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu/README.md">KHR_texture_basisu</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.TextureBasisUniversal"/>
         public const string TextureBasisUniversal = "KHR_texture_basisu";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md">KHR_texture_transform</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.TextureTransform"/>
         public const string TextureTransform = "KHR_texture_transform";
-        /// <summary>
-        /// <see href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_lights_punctual">KHR_lights_punctual</see> glTF extension
-        /// </summary>
+        /// <inheritdoc cref="Extension.LightsPunctual"/>
         public const string LightsPunctual = "KHR_lights_punctual";
+        /// <inheritdoc cref="Extension.MaterialsClearcoat"/>
+        public const string MaterialsClearcoat = "KHR_materials_clearcoat";
+        /// <inheritdoc cref="Extension.MaterialsIor"/>
+        public const string MaterialsIor = "KHR_materials_ior";
+        /// <inheritdoc cref="Extension.MaterialsSheen"/>
+        public const string MaterialsSheen = "KHR_materials_sheen";
+        /// <inheritdoc cref="Extension.MaterialsSpecular"/>
+        public const string MaterialsSpecular = "KHR_materials_specular";
+        /// <inheritdoc cref="Extension.MaterialsVariants"/>
+        public const string MaterialsVariants = "KHR_materials_variants";
 
         /// <summary>
         /// Returns the official name of the glTF extension
@@ -132,6 +134,18 @@ namespace GLTFast
                     return TextureBasisUniversal;
                 case Extension.TextureTransform:
                     return TextureTransform;
+                case Extension.MaterialsClearcoat:
+                    return MaterialsClearcoat;
+                case Extension.MaterialsVariants:
+                    return MaterialsVariants;
+                case Extension.MeshoptCompression:
+                    return MeshoptCompression;
+                case Extension.MaterialsIor:
+                    return MaterialsIor;
+                case Extension.MaterialsSpecular:
+                    return MaterialsSpecular;
+                case Extension.MaterialsSheen:
+                    return MaterialsSheen;
                 default:
                     return null;
             }

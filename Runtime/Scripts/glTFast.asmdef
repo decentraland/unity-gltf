@@ -1,10 +1,10 @@
 {
     "name": "glTFast",
+    "rootNamespace": "GLTFast",
     "references": [
         "Unity.Mathematics",
         "Unity.Burst",
         "Unity.Collections",
-        "Unity.Jobs",
         "Draco",
         "Ktx",
         "Unity.Meshopt.Decompress",
@@ -20,22 +20,22 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.atteneder.draco",
-            "expression": "3.1.0",
+            "name": "com.unity.cloud.draco",
+            "expression": "5.0.0-pre.1",
             "define": "DRACO_UNITY"
         },
         {
-            "name": "com.atteneder.ktx",
+            "name": "com.unity.cloud.ktx",
             "expression": "",
             "define": "KTX_UNITY"
         },
         {
-            "name": "com.atteneder.ktx",
+            "name": "com.unity.cloud.ktx",
             "expression": "1.3.0",
             "define": "KTX_UNITY_1_3_OR_NEWER"
         },
         {
-            "name": "com.atteneder.ktx",
+            "name": "com.unity.cloud.ktx",
             "expression": "2.2.1",
             "define": "KTX_UNITY_2_2_OR_NEWER"
         },
@@ -53,6 +53,11 @@
             "name": "com.unity.render-pipelines.high-definition",
             "expression": "10.0.0",
             "define": "USING_HDRP_10_OR_NEWER"
+        },
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "17",
+            "define": "USING_HDRP_17_OR_NEWER"
         },
         {
             "name": "com.unity.modules.physics",
@@ -75,11 +80,6 @@
             "define": "UNITY_WEBREQUEST_TEXTURE"
         },
         {
-            "name": "com.unity.jobs",
-            "expression": "0.2.0",
-            "define": "UNITY_JOBS"
-        },
-        {
             "name": "com.unity.meshopt.decompress",
             "expression": "",
             "define": "MESHOPT"
@@ -91,8 +91,18 @@
         },
         {
             "name": "com.unity.shadergraph",
+            "expression": "",
+            "define": "UNITY_SHADER_GRAPH"
+        },
+        {
+            "name": "com.unity.shadergraph",
             "expression": "12",
             "define": "UNITY_SHADER_GRAPH_12_OR_NEWER"
+        },
+        {
+            "name": "com.unity.nuget.newtonsoft-json",
+            "expression": "3",
+            "define": "NEWTONSOFT_JSON"
         }
     ],
     "noEngineReferences": false

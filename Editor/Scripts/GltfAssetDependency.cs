@@ -4,7 +4,7 @@ namespace GLTFast
 {
 
     [Serializable]
-    public struct GltfAssetDependency 
+    struct GltfAssetDependency
     {
 
         public enum Type

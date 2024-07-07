@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using UnityEngine;
@@ -119,7 +107,7 @@ namespace GLTFast.Export
         /// <returns>True if material uses unlit shader, false otherwise</returns>
         protected static bool IsUnlit(UnityEngine.Material material)
         {
-            return material.shader.name.ToLower().Contains("unlit");
+            return material.shader.name.ToLowerInvariant().Contains("unlit");
         }
 
         /// <summary>
@@ -140,14 +128,14 @@ namespace GLTFast.Export
         {
 
             gltf.RegisterExtensionUsage(Extension.MaterialsUnlit);
-            material.extensions = material.extensions ?? new MaterialExtension();
+            material.extensions = material.extensions ?? new MaterialExtensions();
             material.extensions.KHR_materials_unlit = new MaterialUnlit();
 
             var pbr = material.pbrMetallicRoughness ?? new PbrMetallicRoughness();
 
             if (GetUnlitColor(uMaterial, out var baseColor))
             {
-                pbr.BaseColor = baseColor;
+                pbr.BaseColor = baseColor.linear;
             }
 
             if (uMaterial.HasProperty(mainTexProperty))
@@ -214,7 +202,7 @@ namespace GLTFast.Export
                 return null;
             }
             var imageExport = new ImageExport(texture2d, format);
-            if (AddImageExport(gltf, imageExport, out var textureId))
+            if (MaterialExport.AddImageExport(gltf, imageExport, out var textureId))
             {
                 return new TextureInfo
                 {
@@ -246,7 +234,7 @@ namespace GLTFast.Export
                 return null;
             }
             var imageExport = new NormalImageExport(texture2d);
-            if (AddImageExport(gltf, imageExport, out var textureId))
+            if (MaterialExport.AddImageExport(gltf, imageExport, out var textureId))
             {
                 var info = new NormalTextureInfo
                 {
@@ -263,26 +251,11 @@ namespace GLTFast.Export
             return null;
         }
 
-        /// <summary>
-        /// Adds an ImageExport to the glTF.
-        /// No conversions or channel swizzling
-        /// </summary>
-        /// <param name="gltf"></param>
-        /// <param name="imageExport"></param>
-        /// <param name="textureId"></param>
-        /// <returns>glTF texture ID</returns>
+        /// <inheritdoc cref="MaterialExport.AddImageExport"/>
+        [Obsolete("Use MaterialExport.AddImageExport instead.")]
         protected static bool AddImageExport(IGltfWritable gltf, ImageExportBase imageExport, out int textureId)
         {
-            var imageId = gltf.AddImage(imageExport);
-            if (imageId < 0)
-            {
-                textureId = -1;
-                return false;
-            }
-
-            var samplerId = gltf.AddSampler(imageExport.FilterMode, imageExport.WrapModeU, imageExport.WrapModeV);
-            textureId = gltf.AddTexture(imageId, samplerId);
-            return true;
+            return MaterialExport.AddImageExport(gltf, imageExport, out textureId);
         }
 
         /// <summary>
@@ -292,7 +265,7 @@ namespace GLTFast.Export
         /// <param name="mat">Source Material</param>
         /// <param name="texPropertyId">Texture property to fetch transformation from</param>
         /// <param name="gltf">Context glTF to export to (for registering extension usage)</param>
-        protected static void ExportTextureTransform(TextureInfo def, UnityEngine.Material mat, int texPropertyId, IGltfWritable gltf)
+        protected static void ExportTextureTransform(TextureInfoBase def, UnityEngine.Material mat, int texPropertyId, IGltfWritable gltf)
         {
             var offset = mat.GetTextureOffset(texPropertyId);
             var scale = mat.GetTextureScale(texPropertyId);
@@ -300,12 +273,11 @@ namespace GLTFast.Export
             if (offset != Vector2.zero || scale != Vector2.one)
             {
                 gltf.RegisterExtensionUsage(Extension.TextureTransform);
-                def.extensions = def.extensions ?? new TextureInfoExtension();
-                def.extensions.KHR_texture_transform = new TextureTransform
+                def.SetTextureTransform(new TextureTransform
                 {
                     scale = new[] { scale.x, scale.y },
-                    offset = new[] { offset.x, offset.y }
-                };
+                    offset = new[] { offset.x, 1 - offset.y - scale.y }
+                });
             }
         }
     }

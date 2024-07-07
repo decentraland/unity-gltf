@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -22,7 +10,7 @@ namespace GLTFast
     using Schema;
 
     /// <summary>
-    /// Extension methods for <seealso cref="Node"/>
+    /// Extension methods for <see cref="NodeBase"/>
     /// </summary>
     public static class NodeExtension
     {
@@ -35,7 +23,7 @@ namespace GLTFast
         /// <param name="position">Node's translation</param>
         /// <param name="rotation">Node's rotation</param>
         /// <param name="scale">Node's scale</param>
-        public static void GetTransform(this Node node, out Vector3 position, out Quaternion rotation, out Vector3 scale)
+        public static void GetTransform(this NodeBase node, out Vector3 position, out Quaternion rotation, out Vector3 scale)
         {
 
             position = Vector3.zero;

@@ -1,24 +1,12 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 #if !GLTFAST_EDITOR_IMPORT_OFF
 
 // glTFast is on the path to being official, so it should have highest priority as importer by default
 // This define is included for completeness.
 // Other glTF importers should specify this via AsmDef dependency, for example
-// `com.atteneder.gltfast@3.0.0: HAVE_GLTFAST` and then checking here `#if HAVE_GLTFAST`
+// `com.unity.cloud.gltfast@3.0.0: HAVE_GLTFAST` and then checking here `#if HAVE_GLTFAST`
 #if false
 #define ANOTHER_IMPORTER_HAS_HIGHER_PRIORITY
 #endif
@@ -33,19 +21,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GLTFast.Loading;
+using System.Runtime.CompilerServices;
 using GLTFast.Logging;
-using GLTFast.Materials;
 using GLTFast.Utils;
 using UnityEditor;
-#if UNITY_2020_2_OR_NEWER
 using UnityEditor.AssetImporters;
-#else
-using UnityEditor.Experimental.AssetImporters;
-#endif
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
+
+[assembly: InternalsVisibleTo("glTFast.Editor.Tests")]
 
 namespace GLTFast.Editor
 {
@@ -55,17 +40,17 @@ namespace GLTFast.Editor
 #else
     [ScriptedImporter(1, null, overrideExts: new[] { "gltf","glb" })]
 #endif
-    public class GltfImporter : ScriptedImporter
+    class GltfImporter : ScriptedImporter
     {
 
         [SerializeField]
         EditorImportSettings editorImportSettings;
 
         [SerializeField]
-        public ImportSettings importSettings;
+        ImportSettings importSettings;
 
         [SerializeField]
-        public InstantiationSettings instantiationSettings;
+        InstantiationSettings instantiationSettings;
 
         // These are used/read in the GltfImporterEditor
         // ReSharper disable NotAccessedField.Local
@@ -73,17 +58,13 @@ namespace GLTFast.Editor
         GltfAssetDependency[] assetDependencies;
 
         [SerializeField]
-        LogItem[] reportItems;
+        internal LogItem[] reportItems;
         // ReSharper restore NotAccessedField.Local
 
-        protected GltfImport m_Gltf;
+        GltfImport m_Gltf;
 
         HashSet<string> m_ImportedNames;
         HashSet<Object> m_ImportedObjects;
-
-        // static fields ensure that they dont get deleted after saving the importer
-        private static IMaterialGenerator customMaterialGenerator;
-        private static IEditorDownloadProvider customDownloadProvider;
 
         // static string[] GatherDependenciesFromSourceFile(string path) {
         //     // Called before actual import for each changed asset that is imported by this importer type
@@ -94,35 +75,22 @@ namespace GLTFast.Editor
         //     return null;
         // }
 
-        public void SetupCustomMaterialGenerator(IMaterialGenerator materialGenerator)
-        {
-            customMaterialGenerator = materialGenerator;
-        }
-
-        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider)
-        {
-            customDownloadProvider = downloadProvider;
-        }
-
         public override void OnImportAsset(AssetImportContext ctx)
         {
+
             reportItems = null;
 
-            var downloadProvider = customDownloadProvider ?? new EditorDownloadProvider(assetDependencies);
+            var downloadProvider = new EditorDownloadProvider();
             var logger = new CollectingLogger();
 
             m_Gltf = new GltfImport(
                 downloadProvider,
                 new UninterruptedDeferAgent(),
-                customMaterialGenerator,
+                null,
                 logger
                 );
 
-            // we clean the overrides to avoid future imports with incorrect data
-            customDownloadProvider = null;
-            customMaterialGenerator = null;
-
-            var gltfIcon = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.atteneder.gltfast/Editor/UI/gltf-icon-bug.png");
+            var gltfIcon = AssetDatabase.LoadAssetAtPath<Texture2D>($"Packages/{GltfGlobals.GltfPackageName}/Editor/UI/gltf-icon-bug.png");
 
             if (editorImportSettings == null)
             {
@@ -169,57 +137,67 @@ namespace GLTFast.Editor
                 instantiationLogger = new CollectingLogger();
                 for (var sceneIndex = 0; sceneIndex < m_Gltf.SceneCount; sceneIndex++)
                 {
-                    var scene = m_Gltf.GetSourceScene(sceneIndex);
-                    var sceneName = m_Gltf.GetSceneName(sceneIndex);
-                    var go = new GameObject(sceneName);
-                    var instantiator = new GameObjectInstantiator(m_Gltf, go.transform, instantiationLogger, instantiationSettings);
-                    var index = sceneIndex;
-                    success = AsyncHelpers.RunSync(() => m_Gltf.InstantiateSceneAsync(instantiator, index));
-                    if (!success) break;
-                    var useFirstChild = true;
-                    var multipleNodes = scene.nodes is { Length: > 1 };
-                    var hasAnimation = false;
-#if UNITY_ANIMATION
-                    if (importSettings.AnimationMethod != AnimationMethod.None
-                        && (instantiationSettings.Mask & ComponentType.Animation) != 0) {
-                        var animationClips = m_Gltf.GetAnimationClips();
-                        if (animationClips != null && animationClips.Length > 0) {
-                            hasAnimation = true;
+                    try
+                    {
+                        ImportScene(ctx, sceneIndex, instantiationLogger);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        instantiationLogger.Error($"Failed creating scene {sceneIndex} instance.");
+                    }
+
+                    if (m_Gltf.MaterialsVariantsCount > 0)
+                    {
+                        for (var variantIndex = 0; variantIndex < m_Gltf.MaterialsVariantsCount; variantIndex++)
+                        {
+                            try
+                            {
+                                ImportScene(ctx, sceneIndex, instantiationLogger, variantIndex);
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                instantiationLogger.Error($"Failed creating scene {sceneIndex} materials variant " +
+                                    $"{variantIndex} instance.");
+                            }
                         }
-                    }
-#endif
-
-                    if (instantiationSettings.SceneObjectCreation == SceneObjectCreation.Never
-                        || instantiationSettings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && !multipleNodes)
-                    {
-                        // No scene GameObject was created, so the first
-                        // child is the first (and in this case only) node.
-
-                        // If there's animation, its clips' paths are relative
-                        // to the root GameObject (which will also carry the
-                        // `Animation` component. If not, we can import the the
-                        // first and only node as root directly.
-
-                        useFirstChild = !hasAnimation;
-                    }
-
-                    var sceneTransform = useFirstChild
-                        ? go.transform.GetChild(0)
-                        : go.transform;
-                    var sceneGo = sceneTransform.gameObject;
-
-                    PreProcessGameObjects(sceneGo);
-
-                    AddObjectToAsset(ctx, $"scenes/{sceneName}", sceneGo, gltfIcon);
-                    if (sceneIndex == m_Gltf.DefaultSceneIndex || (m_Gltf.DefaultSceneIndex == null && sceneIndex == 0) )
-                    {
-                        ctx.SetMainObject(sceneGo);
                     }
                 }
 
-                CreateTextureAssets(ctx);
+                for (var i = 0; i < m_Gltf.TextureCount; i++)
+                {
+                    var texture = m_Gltf.GetTexture(i);
+                    if (texture != null)
+                    {
+                        var textureAssetPath = AssetDatabase.GetAssetPath(texture);
+                        if (string.IsNullOrEmpty(textureAssetPath))
+                        {
+                            AddObjectToAsset(ctx, $"textures/{texture.name}", texture);
+                        }
+                    }
+                }
 
-                CreateMaterialAssets(ctx);
+                for (var i = 0; i < m_Gltf.MaterialCount; i++)
+                {
+                    var mat = m_Gltf.GetMaterial(i);
+
+                    // Overriding double-sided for GI baking
+                    // Resolves problems with meshes that are not a closed
+                    // volume at a potential minor cost of baking speed.
+                    mat.doubleSidedGI = true;
+
+                    if (mat != null)
+                    {
+                        AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+                    }
+                }
+
+                if (m_Gltf.defaultMaterial != null)
+                {
+                    // If a default/fallback material was created, import it as well'
+                    // to avoid (pink) objects without materials
+                    var mat = m_Gltf.defaultMaterial;
+                    AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+                }
 
                 var meshes = m_Gltf.GetMeshes();
                 if (meshes != null)
@@ -239,7 +217,20 @@ namespace GLTFast.Editor
                 }
 
 #if UNITY_ANIMATION
-                CreateAnimationClips(ctx);
+                var clips = m_Gltf.GetAnimationClips();
+                if (clips != null) {
+                    foreach (var animationClip in clips) {
+                        if (animationClip == null) {
+                            continue;
+                        }
+                        if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
+                            var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
+                            settings.loopTime = true;
+                            AnimationUtility.SetAnimationClipSettings (animationClip, settings);
+                        }
+                        AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
+                    }
+                }
 
                 // TODO seems the states don't properly connect to the Animator here
                 // (would need to be saved as SubAssets of the AnimatorController)
@@ -274,13 +265,12 @@ namespace GLTFast.Editor
                     continue;
                 }
 
-                var guid = AssetDatabase.AssetPathToGUID(dependency.assetPath);
-                if (string.IsNullOrEmpty(guid))
+                var guid = AssetDatabase.AssetPathToGUID(dependency.originalUri);
+                if (!string.IsNullOrEmpty(guid))
                 {
                     dependency.assetPath = dependency.originalUri;
+                    ctx.DependsOnSourceAsset(dependency.assetPath);
                 }
-
-                ctx.DependsOnSourceAsset(dependency.assetPath);
 
                 deps.Add(dependency);
             }
@@ -304,68 +294,82 @@ namespace GLTFast.Editor
             reportItems = reportItemList.ToArray();
         }
 
-        protected virtual void CreateAnimationClips(AssetImportContext ctx)
+        void ImportScene(
+            AssetImportContext ctx,
+            int sceneIndex,
+            CollectingLogger instantiationLogger,
+            int? materialsVariantIndex = null
+            )
         {
-            var clips = m_Gltf.GetAnimationClips();
-            if (clips != null) {
-                foreach (var animationClip in clips) {
-                    if (animationClip == null) {
-                        continue;
-                    }
-                    if (importSettings.AnimationMethod == AnimationMethod.Mecanim) {
-                        var settings = AnimationUtility.GetAnimationClipSettings(animationClip);
-                        settings.loopTime = true;
-                        AnimationUtility.SetAnimationClipSettings (animationClip, settings);
-                    }
-                    AddObjectToAsset(ctx, $"animations/{animationClip.name}", animationClip);
-                }
-            }
-        }
-
-        protected virtual void PreProcessGameObjects(GameObject sceneGo)
-        {
-
-        }
-
-        protected virtual void CreateMaterialAssets(AssetImportContext ctx)
-        {
-            for (var i = 0; i < m_Gltf.MaterialCount; i++)
+            var scene = m_Gltf.GetSourceScene(sceneIndex);
+            var sceneName = m_Gltf.GetSceneName(sceneIndex);
+            string sceneObjectName = null;
+            string variantNameSuffix = null;
+            if (materialsVariantIndex.HasValue)
             {
-                var mat = m_Gltf.GetMaterial(i);
-
-                // Overriding double-sided for GI baking
-                // Resolves problems with meshes that are not a closed
-                // volume at a potential minor cost of baking speed.
-                mat.doubleSidedGI = true;
-
-                if (mat != null)
+                variantNameSuffix = m_Gltf.GetMaterialsVariantName(materialsVariantIndex.Value);
+                if (string.IsNullOrEmpty(variantNameSuffix))
                 {
-                    AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+                    variantNameSuffix = $"variant_{materialsVariantIndex.Value}";
                 }
+                sceneObjectName = $"{sceneName}_{variantNameSuffix}";
+            }
+            else
+            {
+                sceneObjectName = sceneName;
             }
 
-            if (m_Gltf.defaultMaterial != null)
+            var go = new GameObject(sceneObjectName);
+            var instantiator = new GameObjectInstantiator(m_Gltf, go.transform, instantiationLogger, instantiationSettings);
+            var index = sceneIndex;
+            var success = AsyncHelpers.RunSync(() => m_Gltf.InstantiateSceneAsync(instantiator, index));
+            if (!success)
             {
-                // If a default/fallback material was created, import it as well'
-                // to avoid (pink) objects without materials
-                var mat = m_Gltf.defaultMaterial;
-                AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+                throw new InvalidOperationException("Instantiating scene failed");
             }
-        }
-
-        protected virtual void CreateTextureAssets(AssetImportContext ctx)
-        {
-            for (var i = 0; i < m_Gltf.TextureCount; i++)
-            {
-                var texture = m_Gltf.GetTexture(i);
-                if (texture != null)
-                {
-                    var textureAssetPath = AssetDatabase.GetAssetPath(texture);
-                    if (string.IsNullOrEmpty(textureAssetPath))
-                    {
-                        AddObjectToAsset(ctx, $"textures/{texture.name}", texture);
-                    }
+            var useFirstChild = true;
+            var multipleNodes = scene.nodes.Length > 1;
+            var hasAnimation = false;
+#if UNITY_ANIMATION
+            if (importSettings.AnimationMethod != AnimationMethod.None
+                && (instantiationSettings.Mask & ComponentType.Animation) != 0) {
+                var animationClips = m_Gltf.GetAnimationClips();
+                if (animationClips != null && animationClips.Length > 0) {
+                    hasAnimation = true;
                 }
+            }
+#endif
+
+            if (instantiationSettings.SceneObjectCreation == SceneObjectCreation.Never
+                || instantiationSettings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && !multipleNodes)
+            {
+                // No scene GameObject was created, so the first
+                // child is the first (and in this case only) node.
+
+                // If there's animation, its clips' paths are relative
+                // to the root GameObject (which will also carry the
+                // `Animation` component. If not, we can import the the
+                // first and only node as root directly.
+
+                useFirstChild = !hasAnimation;
+            }
+
+            var sceneTransform = useFirstChild
+                ? go.transform.GetChild(0)
+                : go.transform;
+            var sceneGo = sceneTransform.gameObject;
+
+            if (materialsVariantIndex.HasValue)
+            {
+                sceneGo.name = $"{sceneGo.name}_{variantNameSuffix}";
+
+                var variantsControl = instantiator.SceneInstance.MaterialsVariantsControl;
+                AsyncHelpers.RunSync(() => variantsControl.ApplyMaterialsVariantAsync(materialsVariantIndex.Value));
+            }
+            AddObjectToAsset(ctx, $"scenes/{sceneObjectName}", sceneGo);
+            if (sceneIndex == m_Gltf.DefaultSceneIndex && !materialsVariantIndex.HasValue)
+            {
+                ctx.SetMainObject(sceneGo);
             }
         }
 

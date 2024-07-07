@@ -1,9 +1,9 @@
 {
-  "name": "com.atteneder.gltfast",
-  "version": "5.0.0",
-  "displayName": "DCL - glTFast",
-  "description": "Decentraland's override of the original glTFast implementation to support some small features that we need",
-  "unity": "2021.3",
+  "name": "com.unity.cloud.gltfast",
+  "version": "6.7.0",
+  "displayName": "Unity glTFast",
+  "description": "Use glTFast to import and export glTF 3D files efficiently at runtime or in the Editor",
+  "unity": "2020.3",
   "keywords": [
     "mesh",
     "gltf",
@@ -15,17 +15,13 @@
     "universal",
     "basisu"
   ],
-  "author": {
-    "name": "Andreas Atteneder",
-    "email": "andreas.atteneder@gmail.com",
-    "url": "https://pixel.engineer"
-  },
   "dependencies": {
     "com.unity.modules.jsonserialize": "1.0.0",
     "com.unity.modules.unitywebrequest": "1.0.0",
-    "com.unity.mathematics": "1.2.6",
-    "com.unity.burst": "1.6.6"
+    "com.unity.mathematics": "1.3.1",
+    "com.unity.burst": "1.8.4",
+    "com.unity.collections": "1.5.1"
   },
   "type": "library",
-  "unityRelease": "14f1"
+  "unityRelease": "48f1"
 }

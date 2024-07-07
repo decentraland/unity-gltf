@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 #if DEBUG
 #define GLTFAST_REPORT
@@ -246,15 +234,27 @@ namespace GLTFast.Logging
         /// UV set index is not supported in current render pipeline
         /// </summary>
         UVMulti,
+        /// <summary>
+        /// Fallback to uncompressed meshes/bufferViews is not supported.
+        /// </summary>
+        UncompressedFallbackNotSupported,
+        /// <summary>
+        /// Inconsistent use of vertex color attribute.
+        /// </summary>
+        InconsistentVertexColorUsage,
+        /// <summary>
+        /// Stream read error.
+        /// </summary>
+        StreamError,
     }
 
     /// <summary>
-    /// Converts <seealso cref="LogCode"/> to human readable and understandable message string.
+    /// Converts <see cref="LogCode"/> to human readable and understandable message string.
     /// </summary>
     public static class LogMessages
     {
 #if GLTFAST_REPORT
-        const string k_LinkProjectSetupTextureSupport = "See https://github.com/atteneder/glTFast/blob/main/Documentation~/ProjectSetup.md#texture-support for details.";
+        static readonly string k_LinkProjectSetupTextureSupport = $"See {GltfGlobals.GltfPackageName}/Documentation~/ProjectSetup.md#texture-support for details.";
 
         static readonly Dictionary<LogCode, string> k_FullMessages = new Dictionary<LogCode, string>() {
             { LogCode.AccessorAttributeTypeUnknown, "Unknown GLTFAccessorAttributeType" },
@@ -286,6 +286,7 @@ See details in corresponding issue at https://github.com/atteneder/glTFast/issue
             { LogCode.ImageConversionNotEnabled, $"Jpeg/PNG textures failed because required built-in packages \"Image Conversion\"/\"Unity Web Request Texture\" are not enabled. {k_LinkProjectSetupTextureSupport}" },
             { LogCode.ImageFormatUnknown, "Unknown image format (image {0};uri:{1})" },
             { LogCode.ImageMultipleSamplers, "Have to create copy of image {0} due to different samplers. This is harmless, but requires more memory." },
+            { LogCode.InconsistentVertexColorUsage, "Potential visual discrepancy due to inconsistent vertex colors usage on mesh {0}" },
             { LogCode.IndexFormatInvalid, "Invalid index format {0}" },
             { LogCode.JsonParsingFailed, "Parsing JSON failed" },
             { LogCode.MaterialTransmissionApprox, "Chance of incorrect materials! glTF transmission is approximated when using built-in render pipeline!" },
@@ -296,12 +297,13 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             { LogCode.MissingImageURL, "Image URL missing" },
             { LogCode.MorphTargetContextFail, "Retrieving morph target failed" },
             { LogCode.NamingOverride, "Overriding naming method to be OriginalUnique (animation requirement)" },
-            { LogCode.PackageMissing, "{0} package needs to be installed in order to support glTF extension {1}!\nSee https://github.com/atteneder/glTFast#installing for instructions" },
+            { LogCode.PackageMissing, $"{{0}} package needs to be installed in order to support glTF extension {{1}}!\nSee {GltfGlobals.GltfPackageName}/README.md#installing for instructions" },
             { LogCode.PrimitiveModeUnsupported, "Primitive mode {0} is untested" },
             { LogCode.RemapUnsupported, "{0} remap is not fully supported" },
-            { LogCode.ShaderMissing, "Shader \"{0}\" is missing. Make sure to include it in the build (see https://github.com/atteneder/glTFast/blob/main/Documentation%7E/ProjectSetup.md#materials-and-shader-variants )" },
+            { LogCode.ShaderMissing, $"Shader \"{{0}}\" is missing. Make sure to include it in the build (see {GltfGlobals.GltfPackageName}/Documentation~/ProjectSetup.md#materials-and-shader-variants )" },
             { LogCode.SkinMissing, "Skin missing" },
             { LogCode.SparseAccessor, "Sparse Accessor not supported ({0})" },
+            { LogCode.StreamError, "Stream error: {0}." },
             { LogCode.TextureDownloadFailed, "Download texture {1} failed: {0}" },
             { LogCode.TextureInvalidType, "Invalid {0} texture type (material: {1})" },
             { LogCode.TextureLoadFailed, "Texture #{0} not loaded" },
@@ -309,6 +311,7 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             { LogCode.TopologyPointsMaterialUnsupported, "Could not find material that supports points topology" },
             { LogCode.TopologyUnsupported, "Unsupported topology {0}" },
             { LogCode.TypeUnsupported, "Unsupported {0} type {1}" },
+            { LogCode.UncompressedFallbackNotSupported, "Fallback to uncompressed meshes/bufferViews is not supported" },
             { LogCode.UnityWebRequestTextureNotEnabled, $"PNG/Jpeg textures load slower because built-in package \"Unity Web Request Texture\" is not enabled. {k_LinkProjectSetupTextureSupport}" },
             { LogCode.UVLimit, "Only eight UV sets will get imported" },
             { LogCode.UVMulti, "UV set index {0} is not supported in current render pipeline" },
@@ -316,7 +319,7 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
 #endif
 
         /// <summary>
-        /// Converts a <seealso cref="LogCode"/> to human readable and understandable message string.
+        /// Converts a <see cref="LogCode"/> to human readable and understandable message string.
         /// </summary>
         /// <param name="code">Input LogCode</param>
         /// <param name="messages">Additional message parts (te be filled into final message)</param>
@@ -326,6 +329,7 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             if (code == LogCode.None)
             {
                 var sb = new StringBuilder();
+                if (messages == null) return "";
                 foreach (var message in messages)
                 {
                     if (sb.Length > 0)
@@ -358,5 +362,12 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             }
 #endif
         }
+
+#if UNITY_EDITOR
+        internal static string GetRawMessage(LogCode code)
+        {
+            return k_FullMessages[code];
+        }
+#endif
     }
 }

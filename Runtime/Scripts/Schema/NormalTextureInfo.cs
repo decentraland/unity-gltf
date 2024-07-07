@@ -1,28 +1,38 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using Unity.Mathematics;
 
 namespace GLTFast.Schema
 {
+    /// <inheritdoc />
+    [System.Serializable]
+    public class NormalTextureInfo : NormalTextureInfoBase<TextureInfoExtensions> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TExtensions">normalTextureInfo extension type</typeparam>
+    [System.Serializable]
+    public abstract class NormalTextureInfoBase<TExtensions> : NormalTextureInfoBase
+        where TExtensions : TextureInfoExtensions, new()
+    {
+        /// <inheritdoc cref="Extensions"/>
+        public TExtensions extensions;
+
+        /// <inheritdoc />
+        public override TextureInfoExtensions Extensions => extensions;
+
+        internal override void SetTextureTransform(TextureTransform textureTransform)
+        {
+            extensions = extensions ?? new TExtensions();
+            extensions.KHR_texture_transform = textureTransform;
+        }
+    }
 
     /// <summary>
     /// Normal map specific texture info
     /// </summary>
     [System.Serializable]
-    public class NormalTextureInfo : TextureInfo
+    public abstract class NormalTextureInfoBase : TextureInfoBase
     {
 
         /// <summary>

@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
 using GLTFast.Schema;
@@ -125,7 +113,7 @@ namespace GLTFast
                 jobCount++;
             }
 
-            Accessor nrmAcc = null;
+            AccessorBase nrmAcc = null;
             void* nrmInput = null;
             int nrmInputByteStride = 0;
 
@@ -144,7 +132,7 @@ namespace GLTFast
                 }
             }
 
-            Accessor tanAcc = null;
+            AccessorBase tanAcc = null;
             void* tanInput = null;
             int tanInputByteStride = 0;
 
@@ -194,13 +182,13 @@ namespace GLTFast
                 }
                 if (posAcc.IsSparse)
                 {
-                    buffers.GetAccessorSparseIndices(posAcc.sparse.indices, out var posIndexData);
-                    buffers.GetAccessorSparseValues(posAcc.sparse.values, out var posValueData);
+                    buffers.GetAccessorSparseIndices(posAcc.Sparse.Indices, out var posIndexData);
+                    buffers.GetAccessorSparseValues(posAcc.Sparse.Values, out var posValueData);
                     var sparseJobHandle = VertexBufferConfigBase.GetVector3SparseJob(
                         posIndexData,
                         posValueData,
-                        posAcc.sparse.count,
-                        posAcc.sparse.indices.componentType,
+                        posAcc.Sparse.count,
+                        posAcc.Sparse.Indices.componentType,
                         posAcc.componentType,
                         (float3*)dest,
                         12,
@@ -250,13 +238,13 @@ namespace GLTFast
                     }
                     if (nrmAcc.IsSparse)
                     {
-                        buffers.GetAccessorSparseIndices(nrmAcc.sparse.indices, out var indexData);
-                        buffers.GetAccessorSparseValues(nrmAcc.sparse.values, out var valueData);
+                        buffers.GetAccessorSparseIndices(nrmAcc.Sparse.Indices, out var indexData);
+                        buffers.GetAccessorSparseValues(nrmAcc.Sparse.Values, out var valueData);
                         var sparseJobHandle = VertexBufferConfigBase.GetVector3SparseJob(
                             indexData,
                             valueData,
-                            nrmAcc.sparse.count,
-                            nrmAcc.sparse.indices.componentType,
+                            nrmAcc.Sparse.count,
+                            nrmAcc.Sparse.Indices.componentType,
                             nrmAcc.componentType,
                             (float3*)dest,
                             12,
@@ -307,13 +295,13 @@ namespace GLTFast
                     }
                     if (tanAcc.IsSparse)
                     {
-                        buffers.GetAccessorSparseIndices(tanAcc.sparse.indices, out var indexData);
-                        buffers.GetAccessorSparseValues(tanAcc.sparse.values, out var valueData);
+                        buffers.GetAccessorSparseIndices(tanAcc.Sparse.Indices, out var indexData);
+                        buffers.GetAccessorSparseValues(tanAcc.Sparse.Values, out var valueData);
                         var sparseJobHandle = VertexBufferConfigBase.GetVector3SparseJob(
                             indexData,
                             valueData,
-                            tanAcc.sparse.count,
-                            tanAcc.sparse.indices.componentType,
+                            tanAcc.Sparse.count,
+                            tanAcc.Sparse.Indices.componentType,
                             tanAcc.componentType,
                             (float3*)dest,
                             12,

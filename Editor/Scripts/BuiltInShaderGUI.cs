@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using UnityEditor;
 using UnityEngine;
@@ -38,7 +26,7 @@ namespace GLTFast.Editor
 
         UvTransform? m_UVTransform;
 
-        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
+        public override void OnGUI(MaterialEditor materialEditor, UnityEditor.MaterialProperty[] properties)
         {
             if (materialEditor.target is Material material)
             {
@@ -76,8 +64,8 @@ namespace GLTFast.Editor
                 m_UVTransform = TextureRotationSlider(
                     material,
                     m_UVTransform,
-                    BaseColorTextureScaleTransformProperty,
-                    BaseColorTextureRotationProperty,
+                    MaterialProperty.BaseColorTextureScaleTransform,
+                    MaterialProperty.BaseColorTextureRotation,
                     true,
                     "Base Color Tex Rotation");
                 if (m_UVTransform.HasValue)
@@ -124,7 +112,7 @@ namespace GLTFast.Editor
                     SetOpaqueMode(material);
                     break;
                 case BlendModeOption.Cutout:
-                    SetAlphaModeMask(material, material.GetFloat(AlphaCutoffProperty));
+                    SetAlphaModeMask(material, material.GetFloat(MaterialProperty.AlphaCutoff));
                     break;
                 case BlendModeOption.Fade:
                     SetAlphaModeBlend(material);

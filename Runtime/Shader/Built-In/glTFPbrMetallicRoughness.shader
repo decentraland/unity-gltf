@@ -1,17 +1,5 @@
-// Copyright 2020 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 // Based on Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
@@ -23,7 +11,7 @@ Shader "glTF/PbrMetallicRoughness"
         [MainTexture] baseColorTexture("Base Color Tex", 2D) = "white" {}
         baseColorTexture_Rotation ("Base Color Tex Rotation", Vector) = (0,0,0,0)
         [Enum(UV0,0,UV1,1)] baseColorTexture_texCoord ("Base Color Tex UV", Float) = 0
-        
+
         alphaCutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         roughnessFactor("Roughness", Range(0.0, 1.0)) = 1
@@ -50,12 +38,12 @@ Shader "glTF/PbrMetallicRoughness"
         occlusionTexture("Occlusion Tex", 2D) = "white" {}
         occlusionTexture_Rotation ("Occlusion Tex Rotation", Vector) = (0,0,0,0)
         [Enum(UV0,0,UV1,1)] occlusionTexture_texCoord ("Occlusion Tex UV", Float) = 0
-        
+
         [HDR] emissiveFactor("Emissive", Color) = (0,0,0)
         emissiveTexture("Emission Tex", 2D) = "white" {}
         emissiveTexture_Rotation ("Emission Tex Rotation", Vector) = (0,0,0,0)
         [Enum(UV0,0,UV1,1)] emissiveTexture_texCoord ("Emission Tex UV", Float) = 0
-        
+
         // _DetailMask("Detail Mask", 2D) = "white" {}
 
         // _DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}

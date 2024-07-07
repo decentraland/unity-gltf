@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 #if USING_URP || USING_HDRP || (UNITY_SHADER_GRAPH_12_OR_NEWER && GLTFAST_BUILTIN_SHADER_GRAPH)
 #define GLTFAST_SHADER_GRAPH
@@ -24,7 +12,6 @@ using GLTFast.Schema;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.Assertions;
-using Material = GLTFast.Schema.Material;
 #if USING_URP
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -87,92 +74,135 @@ namespace GLTFast.Materials
         /// <summary>Shader keyword _UV_CHANNEL_SELECT</summary>
         public const string UVChannelSelectKeyword = "_UV_CHANNEL_SELECT";
 
-        /// <summary>Shader property ID for property alphaCutoff</summary>
-        public static readonly int AlphaCutoffProperty = Shader.PropertyToID("alphaCutoff");
-        /// <summary>Shader property ID for property baseColorFactor</summary>
-        public static readonly int BaseColorProperty = Shader.PropertyToID("baseColorFactor");
-        /// <summary>Shader property ID for property baseColorTexture</summary>
-        public static readonly int BaseColorTextureProperty = Shader.PropertyToID("baseColorTexture");
-        /// <summary>Shader property ID for property baseColorTexture_Rotation</summary>
-        public static readonly int BaseColorTextureRotationProperty = Shader.PropertyToID("baseColorTexture_Rotation");
-        /// <summary>Shader property ID for property baseColorTexture_ST</summary>
-        public static readonly int BaseColorTextureScaleTransformProperty = Shader.PropertyToID("baseColorTexture_ST");
-        /// <summary>Shader property ID for property baseColorTexture_texCoord</summary>
-        public static readonly int BaseColorTextureTexCoordProperty = Shader.PropertyToID("baseColorTexture_texCoord");
-        /// <summary>Shader property ID for property _CullMode</summary>
-        public static readonly int CullModeProperty = Shader.PropertyToID("_CullMode");
-        /// <summary>Shader property ID for property _Cull</summary>
-        public static readonly int CullProperty = Shader.PropertyToID("_Cull");
-        /// <summary>Shader property ID for property _DstBlend</summary>
-        public static readonly int DstBlendProperty = Shader.PropertyToID("_DstBlend");
-        /// <summary>Shader property ID for property diffuseFactor</summary>
-        public static readonly int DiffuseFactorProperty = Shader.PropertyToID("diffuseFactor");
-        /// <summary>Shader property ID for property diffuseTexture</summary>
-        public static readonly int DiffuseTextureProperty = Shader.PropertyToID("diffuseTexture");
-        /// <summary>Shader property ID for property diffuseTexture_ST</summary>
-        public static readonly int DiffuseTextureScaleTransformProperty = Shader.PropertyToID("diffuseTexture_ST");
-        /// <summary>Shader property ID for property diffuseTexture_Rotation</summary>
-        public static readonly int DiffuseTextureRotationProperty = Shader.PropertyToID("diffuseTexture_Rotation");
-        /// <summary>Shader property ID for property diffuseTexture_texCoord</summary>
-        public static readonly int DiffuseTextureTexCoordProperty = Shader.PropertyToID("diffuseTexture_texCoord");
-        /// <summary>Shader property ID for property emissiveFactor</summary>
-        public static readonly int EmissiveFactorProperty = Shader.PropertyToID("emissiveFactor");
-        /// <summary>Shader property ID for property emissiveTexture</summary>
-        public static readonly int EmissiveTextureProperty = Shader.PropertyToID("emissiveTexture");
-        /// <summary>Shader property ID for property emissiveTexture_Rotation</summary>
-        public static readonly int EmissiveTextureRotationProperty = Shader.PropertyToID("emissiveTexture_Rotation");
-        /// <summary>Shader property ID for property emissiveTexture_ST</summary>
-        public static readonly int EmissiveTextureScaleTransformProperty = Shader.PropertyToID("emissiveTexture_ST");
-        /// <summary>Shader property ID for property emissiveTexture_texCoord</summary>
-        public static readonly int EmissiveTextureTexCoordProperty = Shader.PropertyToID("emissiveTexture_texCoord");
-        /// <summary>Shader property ID for property glossinessFactor</summary>
-        public static readonly int GlossinessFactorProperty = Shader.PropertyToID("glossinessFactor");
-        /// <summary>Shader property ID for property normalTexture</summary>
-        public static readonly int NormalTextureProperty = Shader.PropertyToID("normalTexture");
-        /// <summary>Shader property ID for property normalTexture_Rotation</summary>
-        public static readonly int NormalTextureRotationProperty = Shader.PropertyToID("normalTexture_Rotation");
-        /// <summary>Shader property ID for property normalTexture_ST</summary>
-        public static readonly int NormalTextureScaleTransformProperty = Shader.PropertyToID("normalTexture_ST");
-        /// <summary>Shader property ID for property normalTexture_texCoord</summary>
-        public static readonly int NormalTextureTexCoordProperty = Shader.PropertyToID("normalTexture_texCoord");
-        /// <summary>Shader property ID for property normalTexture_scale</summary>
-        public static readonly int NormalTextureScaleProperty = Shader.PropertyToID("normalTexture_scale");
-        /// <summary>Shader property ID for property metallicFactor</summary>
-        public static readonly int MetallicProperty = Shader.PropertyToID("metallicFactor");
-        /// <summary>Shader property ID for property metallicRoughnessTexture</summary>
-        public static readonly int MetallicRoughnessMapProperty = Shader.PropertyToID("metallicRoughnessTexture");
-        /// <summary>Shader property ID for property metallicRoughnessTexture_ST</summary>
-        public static readonly int MetallicRoughnessMapScaleTransformProperty = Shader.PropertyToID("metallicRoughnessTexture_ST");
-        /// <summary>Shader property ID for property metallicRoughnessTexture_Rotation</summary>
-        public static readonly int MetallicRoughnessMapRotationProperty = Shader.PropertyToID("metallicRoughnessTexture_Rotation");
-        /// <summary>Shader property ID for property metallicRoughnessTexture_texCoord</summary>
-        public static readonly int MetallicRoughnessMapUVChannelProperty = Shader.PropertyToID("metallicRoughnessTexture_texCoord");
-        /// <summary>Shader property ID for property occlusionTexture</summary>
-        public static readonly int OcclusionTextureProperty = Shader.PropertyToID("occlusionTexture");
-        /// <summary>Shader property ID for property occlusionTexture_strength</summary>
-        public static readonly int OcclusionTextureStrengthProperty = Shader.PropertyToID("occlusionTexture_strength");
-        /// <summary>Shader property ID for property occlusionTexture_Rotation</summary>
-        public static readonly int OcclusionTextureRotationProperty = Shader.PropertyToID("occlusionTexture_Rotation");
-        /// <summary>Shader property ID for property occlusionTexture_ST</summary>
-        public static readonly int OcclusionTextureScaleTransformProperty = Shader.PropertyToID("occlusionTexture_ST");
-        /// <summary>Shader property ID for property occlusionTexture_texCoord</summary>
-        public static readonly int OcclusionTextureTexCoordProperty = Shader.PropertyToID("occlusionTexture_texCoord");
-        /// <summary>Shader property ID for property roughnessFactor</summary>
-        public static readonly int RoughnessFactorProperty = Shader.PropertyToID("roughnessFactor");
-        /// <summary>Shader property ID for property specularFactor</summary>
-        public static readonly int SpecularFactorProperty = Shader.PropertyToID("specularFactor");
-        /// <summary>Shader property ID for property specularGlossinessTexture</summary>
-        public static readonly int SpecularGlossinessTextureProperty = Shader.PropertyToID("specularGlossinessTexture");
-        /// <summary>Shader property ID for property specularGlossinessTexture_ST</summary>
-        public static readonly int SpecularGlossinessTextureScaleTransformProperty = Shader.PropertyToID("specularGlossinessTexture_ST"); // TODO: Support in shader!
-        /// <summary>Shader property ID for property specularGlossinessTexture_Rotation</summary>
-        public static readonly int SpecularGlossinessTextureRotationProperty = Shader.PropertyToID("specularGlossinessTexture_Rotation"); // TODO: Support in shader!
-        /// <summary>Shader property ID for property specularGlossinessTexture_texCoord</summary>
-        public static readonly int SpecularGlossinessTextureTexCoordProperty = Shader.PropertyToID("specularGlossinessTexture_texCoord"); // TODO: Support in shader!
-        /// <summary>Shader property ID for property _SrcBlend</summary>
-        public static readonly int SrcBlendProperty = Shader.PropertyToID("_SrcBlend");
-        /// <summary>Shader property ID for property _ZWrite</summary>
-        public static readonly int ZWriteProperty = Shader.PropertyToID("_ZWrite");
+        /// <inheritdoc cref="MaterialProperty.AlphaCutoff" />
+        [Obsolete("Use MaterialProperty.AlphaCutoff instead.")]
+        public static readonly int AlphaCutoffProperty = MaterialProperty.AlphaCutoff;
+        /// <inheritdoc cref="MaterialProperty.BaseColor"/>
+        [Obsolete("Use MaterialProperty.BaseColor instead.")]
+        public static readonly int BaseColorProperty = MaterialProperty.BaseColor;
+        /// <inheritdoc cref="MaterialProperty.BaseColorTexture"/>
+        [Obsolete("Use MaterialProperty.BaseColorTexture instead.")]
+        public static readonly int BaseColorTextureProperty = MaterialProperty.BaseColorTexture;
+        /// <inheritdoc cref="MaterialProperty.BaseColorTextureRotation"/>
+        [Obsolete("Use MaterialProperty.BaseColorTextureRotation instead.")]
+        public static readonly int BaseColorTextureRotationProperty = MaterialProperty.BaseColorTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.BaseColorTextureScaleTransform"/>
+        [Obsolete("Use MaterialProperty.BaseColorTextureScaleTransform instead.")]
+        public static readonly int BaseColorTextureScaleTransformProperty = MaterialProperty.BaseColorTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.BaseColorTextureTexCoord"/>
+        [Obsolete("Use MaterialProperty.BaseColorTextureTexCoord instead.")]
+        public static readonly int BaseColorTextureTexCoordProperty = MaterialProperty.BaseColorTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.CullMode" />
+        [Obsolete("Use MaterialProperty.CullMode instead.")]
+        public static readonly int CullModeProperty = MaterialProperty.CullMode;
+        /// <inheritdoc cref="MaterialProperty.Cull"/>
+        [Obsolete("Use MaterialProperty.Cull instead.")]
+        public static readonly int CullProperty = MaterialProperty.Cull;
+        /// <inheritdoc cref="MaterialProperty.DstBlend" />
+        [Obsolete("Use MaterialProperty.DstBlend instead.")]
+        public static readonly int DstBlendProperty = MaterialProperty.DstBlend;
+        /// <inheritdoc cref="MaterialProperty.DiffuseFactor" />
+        [Obsolete("Use MaterialProperty.DiffuseFactor instead.")]
+        public static readonly int DiffuseFactorProperty = MaterialProperty.DiffuseFactor;
+        /// <inheritdoc cref="MaterialProperty.DiffuseTexture" />
+        [Obsolete("Use MaterialProperty.DiffuseTexture instead.")]
+        public static readonly int DiffuseTextureProperty = MaterialProperty.DiffuseTexture;
+        /// <inheritdoc cref="MaterialProperty.DiffuseTextureScaleTransform" />
+        [Obsolete("Use MaterialProperty.DiffuseTextureScaleTransform instead.")]
+        public static readonly int DiffuseTextureScaleTransformProperty = MaterialProperty.DiffuseTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.DiffuseTextureRotation" />
+        [Obsolete("Use MaterialProperty.DiffuseTextureRotation instead.")]
+        public static readonly int DiffuseTextureRotationProperty = MaterialProperty.DiffuseTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.DiffuseTextureTexCoord" />
+        [Obsolete("Use MaterialProperty.DiffuseTextureTexCoord instead.")]
+        public static readonly int DiffuseTextureTexCoordProperty = MaterialProperty.DiffuseTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.EmissiveFactor" />
+        [Obsolete("Use MaterialProperty.EmissiveFactor instead.")]
+        public static readonly int EmissiveFactorProperty = MaterialProperty.EmissiveFactor;
+        /// <inheritdoc cref="MaterialProperty.EmissiveTexture" />
+        [Obsolete("Use MaterialProperty.EmissiveTexture instead.")]
+        public static readonly int EmissiveTextureProperty = MaterialProperty.EmissiveTexture;
+        /// <inheritdoc cref="MaterialProperty.EmissiveTextureRotation" />
+        [Obsolete("Use MaterialProperty.EmissiveTextureRotation instead.")]
+        public static readonly int EmissiveTextureRotationProperty = MaterialProperty.EmissiveTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.EmissiveTextureScaleTransform" />
+        [Obsolete("Use MaterialProperty.EmissiveTextureScaleTransform instead.")]
+        public static readonly int EmissiveTextureScaleTransformProperty = MaterialProperty.EmissiveTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.EmissiveTextureTexCoord" />
+        [Obsolete("Use MaterialProperty.EmissiveTextureTexCoord instead.")]
+        public static readonly int EmissiveTextureTexCoordProperty = MaterialProperty.EmissiveTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.GlossinessFactor" />
+        [Obsolete("Use MaterialProperty.GlossinessFactor instead.")]
+        public static readonly int GlossinessFactorProperty = MaterialProperty.GlossinessFactor;
+        /// <inheritdoc cref="MaterialProperty.NormalTexture" />
+        [Obsolete("Use MaterialProperty.NormalTexture instead.")]
+        public static readonly int NormalTextureProperty = MaterialProperty.NormalTexture;
+        /// <inheritdoc cref="MaterialProperty.NormalTextureRotation" />
+        [Obsolete("Use MaterialProperty.NormalTextureRotation instead.")]
+        public static readonly int NormalTextureRotationProperty = MaterialProperty.NormalTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.NormalTextureScaleTransform" />
+        [Obsolete("Use MaterialProperty.NormalTextureScaleTransform instead.")]
+        public static readonly int NormalTextureScaleTransformProperty = MaterialProperty.NormalTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.NormalTextureTexCoord" />
+        [Obsolete("Use MaterialProperty.NormalTextureTexCoord instead.")]
+        public static readonly int NormalTextureTexCoordProperty = MaterialProperty.NormalTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.NormalTextureScale" />
+        [Obsolete("Use MaterialProperty.NormalTextureScale instead.")]
+        public static readonly int NormalTextureScaleProperty = MaterialProperty.NormalTextureScale;
+        /// <inheritdoc cref="MaterialProperty.Metallic" />
+        [Obsolete("Use MaterialProperty.Metallic instead.")]
+        public static readonly int MetallicProperty = MaterialProperty.Metallic;
+        /// <inheritdoc cref="MaterialProperty.MetallicRoughnessMap" />
+        [Obsolete("Use MaterialProperty.MetallicRoughnessMap instead.")]
+        public static readonly int MetallicRoughnessMapProperty = MaterialProperty.MetallicRoughnessMap;
+        /// <inheritdoc cref="MaterialProperty.MetallicRoughnessMapScaleTransform" />
+        [Obsolete("Use MaterialProperty.MetallicRoughnessMapScaleTransform instead.")]
+        public static readonly int MetallicRoughnessMapScaleTransformProperty = MaterialProperty.MetallicRoughnessMapScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.MetallicRoughnessMapRotation" />
+        [Obsolete("Use MaterialProperty.MetallicRoughnessMapRotation instead.")]
+        public static readonly int MetallicRoughnessMapRotationProperty = MaterialProperty.MetallicRoughnessMapRotation;
+        /// <inheritdoc cref="MaterialProperty.MetallicRoughnessMapTexCoord" />
+        [Obsolete("Use MaterialProperty.MetallicRoughnessMapTexCoord instead.")]
+        public static readonly int MetallicRoughnessMapUVChannelProperty = MaterialProperty.MetallicRoughnessMapTexCoord;
+        /// <inheritdoc cref="MaterialProperty.OcclusionTexture" />
+        [Obsolete("Use MaterialProperty.OcclusionTexture instead.")]
+        public static readonly int OcclusionTextureProperty = MaterialProperty.OcclusionTexture;
+        /// <inheritdoc cref="MaterialProperty.OcclusionTextureStrength" />
+        [Obsolete("Use MaterialProperty.OcclusionTextureStrength instead.")]
+        public static readonly int OcclusionTextureStrengthProperty = MaterialProperty.OcclusionTextureStrength;
+        /// <inheritdoc cref="MaterialProperty.OcclusionTextureRotation" />
+        [Obsolete("Use MaterialProperty.OcclusionTextureRotation instead.")]
+        public static readonly int OcclusionTextureRotationProperty = MaterialProperty.OcclusionTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.OcclusionTextureScaleTransform" />
+        [Obsolete("Use MaterialProperty.OcclusionTextureScaleTransform instead.")]
+        public static readonly int OcclusionTextureScaleTransformProperty = MaterialProperty.OcclusionTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.OcclusionTextureTexCoord" />
+        [Obsolete("Use MaterialProperty.OcclusionTextureTexCoord instead.")]
+        public static readonly int OcclusionTextureTexCoordProperty = MaterialProperty.OcclusionTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.RoughnessFactor" />
+        [Obsolete("Use MaterialProperty.RoughnessFactor instead.")]
+        public static readonly int RoughnessFactorProperty = MaterialProperty.RoughnessFactor;
+        /// <inheritdoc cref="MaterialProperty.SpecularFactor" />
+        [Obsolete("Use MaterialProperty.SpecularFactor instead.")]
+        public static readonly int SpecularFactorProperty = MaterialProperty.SpecularFactor;
+        /// <inheritdoc cref="MaterialProperty.SpecularGlossinessTexture" />
+        [Obsolete("Use MaterialProperty.SpecularGlossinessTexture instead.")]
+        public static readonly int SpecularGlossinessTextureProperty = MaterialProperty.SpecularGlossinessTexture;
+        /// <inheritdoc cref="MaterialProperty.SpecularGlossinessTextureScaleTransform" />
+        [Obsolete("Use MaterialProperty.SpecularGlossinessTextureScaleTransform instead.")]
+        public static readonly int SpecularGlossinessTextureScaleTransformProperty = MaterialProperty.SpecularGlossinessTextureScaleTransform;
+        /// <inheritdoc cref="MaterialProperty.SpecularGlossinessTextureRotation" />
+        [Obsolete("Use MaterialProperty.SpecularGlossinessTextureRotation instead.")]
+        public static readonly int SpecularGlossinessTextureRotationProperty = MaterialProperty.SpecularGlossinessTextureRotation;
+        /// <inheritdoc cref="MaterialProperty.SpecularGlossinessTextureTexCoord" />
+        [Obsolete("Use MaterialProperty.SpecularGlossinessTextureTexCoord instead.")]
+        public static readonly int SpecularGlossinessTextureTexCoordProperty = MaterialProperty.SpecularGlossinessTextureTexCoord;
+        /// <inheritdoc cref="MaterialProperty.SrcBlend" />
+        [Obsolete("Use MaterialProperty.SrcBlend instead.")]
+        public static readonly int SrcBlendProperty = MaterialProperty.SrcBlend;
+        /// <inheritdoc cref="MaterialProperty.ZWrite" />
+        [Obsolete("Use MaterialProperty.ZWrite instead.")]
+        public static readonly int ZWriteProperty = MaterialProperty.ZWrite;
 
         // ReSharper restore MemberCanBeProtected.Global
         // ReSharper restore MemberCanBePrivate.Global
@@ -188,7 +218,7 @@ namespace GLTFast.Materials
         /// the currently used render pipeline.
         /// </summary>
         /// <returns>The default material generator</returns>
-        /// <exception cref="Exception"></exception>
+        /// <exception cref="InvalidOperationException">Is thrown when the default material generator couldn't be determined based on the current render pipeline.</exception>
         public static IMaterialGenerator GetDefaultMaterialGenerator()
         {
 
@@ -219,7 +249,7 @@ namespace GLTFast.Materials
                     return s_DefaultMaterialGenerator;
 #endif
                 default:
-                    throw new Exception($"Could not determine default MaterialGenerator (render pipeline {renderPipeline})");
+                    throw new InvalidOperationException($"Could not determine default MaterialGenerator (render pipeline {renderPipeline})");
             }
         }
 
@@ -246,7 +276,7 @@ namespace GLTFast.Materials
         /// <summary>
         /// Creates a fallback material to be assigned to nodes without a material.
         /// </summary>
-        /// <param name="pointsSupport">If true, material has to support meshes with points topology <seealso cref="MeshTopology.Points"/></param>
+        /// <param name="pointsSupport">If true, material has to support meshes with <see cref="MeshTopology.Points">points</see> topology</param>
         /// <returns>fallback material</returns>
         protected abstract UnityEngine.Material GenerateDefaultMaterial(bool pointsSupport = false);
 
@@ -267,10 +297,11 @@ namespace GLTFast.Materials
         }
 
         /// <inheritdoc />
-        public abstract UnityEngine.Material GenerateMaterial(int materialIndex,
-            Material gltfMaterial,
+        public abstract UnityEngine.Material GenerateMaterial(
+            MaterialBase gltfMaterial,
             IGltfReadable gltf,
-            bool pointsSupport = false);
+            bool pointsSupport = false
+            );
 
         /// <inheritdoc />
         public void SetLogger(ICodeLogger logger)
@@ -290,7 +321,7 @@ namespace GLTFast.Materials
         /// <param name="uvChannelPropertyId">UV channel selection property</param>
         /// <returns>True if texture assignment was successful, false otherwise.</returns>
         protected bool TrySetTexture(
-            TextureInfo textureInfo,
+            TextureInfoBase textureInfo,
             UnityEngine.Material material,
             IGltfReadable gltf,
             int texturePropertyId,
@@ -313,7 +344,7 @@ namespace GLTFast.Materials
                         // this condition
                         if (scaleTransformPropertyId >= 0 && rotationPropertyId >= 0 && uvChannelPropertyId >= 0)
                         {
-                            var isKtx = srcTexture.IsKtx;
+                            var flipY = gltf.IsTextureYFlipped(textureIndex);
                             TrySetTextureTransform(
                                 textureInfo,
                                 material,
@@ -321,7 +352,7 @@ namespace GLTFast.Materials
                                 scaleTransformPropertyId,
                                 rotationPropertyId,
                                 uvChannelPropertyId,
-                                isKtx
+                                flipY
                                 );
                         }
                         return true;
@@ -343,7 +374,7 @@ namespace GLTFast.Materials
         // }
 
         void TrySetTextureTransform(
-            TextureInfo textureInfo,
+            TextureInfoBase textureInfo,
             UnityEngine.Material material,
             int texturePropertyId,
             int scaleTransformPropertyId = -1,
@@ -361,10 +392,10 @@ namespace GLTFast.Materials
 
             var texCoord = textureInfo.texCoord;
 
-            if (textureInfo.extensions?.KHR_texture_transform != null)
+            if (textureInfo.Extensions?.KHR_texture_transform != null)
             {
                 hasTransform = true;
-                var tt = textureInfo.extensions.KHR_texture_transform;
+                var tt = textureInfo.Extensions.KHR_texture_transform;
                 if (tt.texCoord >= 0)
                 {
                     texCoord = tt.texCoord;

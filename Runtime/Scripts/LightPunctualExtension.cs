@@ -1,22 +1,11 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using UnityEngine;
 
 #if USING_HDRP
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 #endif
 
@@ -26,7 +15,7 @@ namespace GLTFast
     using Schema;
 
     /// <summary>
-    /// Extension methods for <seealso cref="LightPunctual"/>
+    /// Extension methods for <see cref="LightPunctual"/>
     /// </summary>
     public static class LightPunctualExtension
     {
@@ -56,6 +45,7 @@ namespace GLTFast
                     throw new ArgumentOutOfRangeException();
             }
 
+            lightDestination.useColorTemperature = false;
             lightDestination.color = lightSource.LightColor.gamma;
 
             LightAssignIntensity(lightDestination, lightSource, lightIntensityFactor);
@@ -126,14 +116,19 @@ namespace GLTFast
                     break;
 #if USING_HDRP
                 case RenderPipeline.HighDefinition:
+                    var lightUnit = lightSource.GetLightType() == LightPunctual.Type.Directional
+                        ? LightUnit.Lux
+                        : LightUnit.Candela;
+
+#if USING_HDRP_17_OR_NEWER
+                    lightDestination.gameObject.AddComponent<HDAdditionalLightData>();
+                    lightDestination.lightUnit = lightUnit;
+                    lightDestination.intensity = lightSource.intensity;
+#else
                     var lightHd = lightDestination.gameObject.AddComponent<HDAdditionalLightData>();
-                    if (lightSource.GetLightType() == LightPunctual.Type.Directional) {
-                        lightHd.lightUnit = LightUnit.Lux;
-                    }
-                    else {
-                        lightHd.lightUnit = LightUnit.Candela;
-                    }
+                    lightHd.lightUnit = lightUnit;
                     lightHd.intensity = lightSource.intensity;
+#endif
                     break;
 #endif
                 default:
@@ -156,10 +151,14 @@ namespace GLTFast
                     break;
 #if USING_HDRP
                 case RenderPipeline.HighDefinition:
+#if USING_HDRP_17_OR_NEWER
+                    lightDestination.intensity = lightSource.intensity;
+#else
                     if (lightSource.gameObject.TryGetComponent(out HDAdditionalLightData lightHd))
                         lightDestination.intensity = lightHd.intensity;
                     else
                         lightDestination.intensity = 1;
+#endif
                     break;
 #endif
                 default:

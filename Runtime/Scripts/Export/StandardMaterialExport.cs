@@ -1,20 +1,8 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
-
+using GLTFast.Materials;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -38,7 +26,6 @@ namespace GLTFast.Export
 #endif
         const string k_KeywordSmoothnessTextureAlbedoChannelA = "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A";
 
-        static readonly int k_Cull = Shader.PropertyToID("_Cull");
         static readonly int k_EmissionColor = Shader.PropertyToID("_EmissionColor");
         static readonly int k_EmissionMap = Shader.PropertyToID("_EmissionMap");
         static readonly int k_BumpMap = Shader.PropertyToID("_BumpMap");
@@ -74,7 +61,7 @@ namespace GLTFast.Export
             };
 
             SetAlphaModeAndCutoff(uMaterial, material);
-            material.doubleSided = IsDoubleSided(uMaterial, k_Cull);
+            material.doubleSided = IsDoubleSided(uMaterial, MaterialProperty.Cull);
 
             if (uMaterial.IsKeywordEnabled(k_KeywordEmission))
             {
@@ -190,7 +177,7 @@ namespace GLTFast.Export
                     metallicFactor = 0,
                     roughnessFactor = 1.0f,
                     BaseColor = uMaterial.HasProperty(BaseColorProperty)
-                        ? uMaterial.GetColor(BaseColorProperty)
+                        ? uMaterial.GetColor(BaseColorProperty).linear
                         : Color.white
                 };
                 if (mainTex != null)
@@ -204,7 +191,7 @@ namespace GLTFast.Export
                 if (uMaterial.HasProperty(k_TintColor))
                 {
                     //particles use _TintColor instead of _Color
-                    material.pbrMetallicRoughness.BaseColor = uMaterial.GetColor(k_TintColor);
+                    material.pbrMetallicRoughness.BaseColor = uMaterial.GetColor(k_TintColor).linear;
                 }
             }
 
@@ -244,12 +231,12 @@ namespace GLTFast.Export
 
             if (ormImageExport != null && material.pbrMetallicRoughness != null)
             {
-                if (AddImageExport(gltf, ormImageExport, out var ormTextureId))
+                if (MaterialExport.AddImageExport(gltf, ormImageExport, out var ormTextureId))
                 {
-                    if (material.pbrMetallicRoughness.metallicRoughnessTexture != null)
+                    if (material.pbrMetallicRoughness.MetallicRoughnessTexture != null)
                     {
-                        material.pbrMetallicRoughness.metallicRoughnessTexture.index = ormTextureId;
-                        ExportTextureTransform(material.pbrMetallicRoughness.metallicRoughnessTexture, uMaterial, k_MetallicGlossMap, gltf);
+                        material.PbrMetallicRoughness.MetallicRoughnessTexture.index = ormTextureId;
+                        ExportTextureTransform(material.PbrMetallicRoughness.MetallicRoughnessTexture, uMaterial, k_MetallicGlossMap, gltf);
                     }
 
                     if (ormImageExport.HasOcclusion)
@@ -301,12 +288,12 @@ namespace GLTFast.Export
 
             if (uMaterial.HasProperty(BaseColorProperty))
             {
-                pbr.BaseColor = uMaterial.GetColor(BaseColorProperty);
+                pbr.BaseColor = uMaterial.GetColor(BaseColorProperty).linear;
             }
             else
             if (uMaterial.HasProperty(ColorProperty))
             {
-                pbr.BaseColor = uMaterial.GetColor(ColorProperty);
+                pbr.BaseColor = uMaterial.GetColor(ColorProperty).linear;
             }
 
             if (uMaterial.HasProperty(k_TintColor))
@@ -319,7 +306,7 @@ namespace GLTFast.Export
                     white = (c.r + c.g + c.b) / 3.0f; //multiply alpha by overall whiteness of TintColor
                 }
 
-                pbr.BaseColor = uMaterial.GetColor(k_TintColor) * white;
+                pbr.BaseColor = (uMaterial.GetColor(k_TintColor) * white).linear;
             }
 
             if (uMaterial.HasProperty(mainTexProperty))
@@ -341,9 +328,9 @@ namespace GLTFast.Export
                                 ? ImageFormat.Jpg
                                 : ImageFormat.Unknown
                         );
-                        if (pbr.baseColorTexture != null)
+                        if (pbr.BaseColorTexture != null)
                         {
-                            ExportTextureTransform(pbr.baseColorTexture, uMaterial, mainTexProperty, gltf);
+                            ExportTextureTransform(pbr.BaseColorTexture, uMaterial, mainTexProperty, gltf);
                         }
                     }
                     else
@@ -425,7 +412,7 @@ namespace GLTFast.Export
                 return null;
             }
             var imageExport = new ImageExport(texture2d);
-            if (AddImageExport(gltf, imageExport, out var textureId))
+            if (MaterialExport.AddImageExport(gltf, imageExport, out var textureId))
             {
                 return new OcclusionTextureInfo
                 {

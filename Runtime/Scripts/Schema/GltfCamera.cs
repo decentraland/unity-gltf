@@ -1,30 +1,42 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace GLTFast.Schema
 {
+
+    /// <inheritdoc />
+    [Serializable]
+    public class Camera : CameraBase<CameraOrthographic, CameraPerspective> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TOrthographic">Orthographic camera type</typeparam>
+    /// <typeparam name="TPerspective">Perspective camera type</typeparam>
+    [Serializable]
+    public abstract class CameraBase<TOrthographic, TPerspective> : CameraBase
+        where TOrthographic : CameraOrthographic
+        where TPerspective : CameraPerspective
+    {
+        /// <inheritdoc cref="Orthographic"/>
+        public TOrthographic orthographic;
+
+        /// <inheritdoc cref="Perspective"/>
+        public TPerspective perspective;
+
+        /// <inheritdoc />
+        public override CameraOrthographic Orthographic => orthographic;
+
+        /// <inheritdoc />
+        public override CameraPerspective Perspective => perspective;
+    }
 
     /// <summary>
     /// A camera’s projection
     /// </summary>
     [Serializable]
-    public class Camera : NamedObject
+    public abstract class CameraBase : NamedObject
     {
 
         /// <summary>
@@ -42,21 +54,13 @@ namespace GLTFast.Schema
             Perspective
         }
 
-        [SerializeField]
-        string type;
+        /// <inheritdoc cref="Type"/>
+        // Field is public for unified serialization only. Warn via Obsolete attribute.
+        [Obsolete("Use GetCameraType and SetCameraType for access.")]
+        public string type;
 
         Type? m_TypeEnum;
 
-        private readonly Dictionary<string, Type?> cameraTypesTable = new()
-        {
-            {"ORTHOGRAPHIC", Type.Orthographic},
-            {"Orthographic", Type.Orthographic},
-            {"orthographic", Type.Orthographic},
-            {"PERSPECTIVE", Type.Perspective},
-            {"Perspective", Type.Perspective},
-            {"perspective", Type.Perspective},
-        };
-        
         /// <summary>
         /// <see cref="Type"/> typed and cached getter onto <see cref="type"/> string.
         /// </summary>
@@ -67,53 +71,53 @@ namespace GLTFast.Schema
             {
                 return m_TypeEnum.Value;
             }
-            
-            if (!string.IsNullOrEmpty(type))
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (Enum.TryParse<Type>(type, true, out var typeEnum))
             {
-                if (!cameraTypesTable.TryGetValue(type, out m_TypeEnum))
-                {
-                    m_TypeEnum = (Type)Enum.Parse(typeof(Type), type, true);
-                    cameraTypesTable.Add(type, m_TypeEnum);
-                }
+                m_TypeEnum = typeEnum;
                 type = null;
                 return m_TypeEnum.Value;
             }
-            
-            if (orthographic != null) m_TypeEnum = Type.Orthographic;
-            if (perspective != null) m_TypeEnum = Type.Perspective;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if (Orthographic != null) m_TypeEnum = Type.Orthographic;
+            if (Perspective != null) m_TypeEnum = Type.Perspective;
             return m_TypeEnum ?? Type.Perspective;
         }
 
         /// <summary>
         /// <see cref="Type"/> typed setter for <see cref="type"/> string.
         /// </summary>
-        /// <param name="type">Camera type</param>
-        public void SetCameraType(Type type)
+        /// <param name="cameraType">Camera type</param>
+        public void SetCameraType(Type cameraType)
         {
-            this.type = null;
-            m_TypeEnum = type;
+#pragma warning disable CS0618 // Type or member is obsolete
+            type = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+            m_TypeEnum = cameraType;
         }
 
         /// <inheritdoc cref="CameraOrthographic"/>
-        public CameraOrthographic orthographic;
+        public abstract CameraOrthographic Orthographic { get; }
 
         /// <inheritdoc cref="CameraOrthographic"/>
-        public CameraPerspective perspective;
+        public abstract CameraPerspective Perspective { get; }
 
         internal void GltfSerialize(JsonWriter writer)
         {
             writer.AddObject();
-            GltfSerializeRoot(writer);
-            writer.AddProperty("type", m_TypeEnum.ToString().ToLower());
-            if (perspective != null)
+            GltfSerializeName(writer);
+            writer.AddProperty("type", m_TypeEnum.ToString().ToLowerInvariant());
+            if (Perspective != null)
             {
                 writer.AddProperty("perspective");
-                perspective.GltfSerialize(writer);
+                Perspective.GltfSerialize(writer);
             }
-            if (orthographic != null)
+            if (Orthographic != null)
             {
                 writer.AddProperty("orthographic");
-                orthographic.GltfSerialize(writer);
+                Orthographic.GltfSerialize(writer);
             }
             writer.Close();
         }
@@ -128,7 +132,7 @@ namespace GLTFast.Schema
 
         /// <summary>
         /// The floating-point horizontal magnification of the view. Must not be zero.
-        /// /// </summary>
+        /// </summary>
         // ReSharper disable once IdentifierTypo
         public float xmag;
 

@@ -1,17 +1,5 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 using System;
 using GLTFast.Vertex;
@@ -179,13 +167,13 @@ namespace GLTFast
                 }
                 if (posAcc.IsSparse)
                 {
-                    buffers.GetAccessorSparseIndices(posAcc.sparse.indices, out var posIndexData);
-                    buffers.GetAccessorSparseValues(posAcc.sparse.values, out var posValueData);
+                    buffers.GetAccessorSparseIndices(posAcc.Sparse.Indices, out var posIndexData);
+                    buffers.GetAccessorSparseValues(posAcc.Sparse.Values, out var posValueData);
                     var sparseJobHandle = GetVector3SparseJob(
                         posIndexData,
                         posValueData,
-                        posAcc.sparse.count,
-                        posAcc.sparse.indices.componentType,
+                        posAcc.Sparse.count,
+                        posAcc.Sparse.Indices.componentType,
                         posAcc.componentType,
                         (float3*)vDataPtr,
                         outputByteStride,
@@ -220,7 +208,7 @@ namespace GLTFast
                 buffers.GetAccessor(normalAccessorIndex, out var nrmAcc, out var input, out var inputByteStride);
                 if (nrmAcc.IsSparse)
                 {
-                    m_Logger.Error(LogCode.SparseAccessor, "normals");
+                    m_Logger?.Error(LogCode.SparseAccessor, "normals");
                 }
                 var h = GetVector3Job(
                     input,
@@ -249,7 +237,7 @@ namespace GLTFast
                 buffers.GetAccessor(tangentAccessorIndex, out var tanAcc, out var input, out var inputByteStride);
                 if (tanAcc.IsSparse)
                 {
-                    m_Logger.Error(LogCode.SparseAccessor, "tangents");
+                    m_Logger?.Error(LogCode.SparseAccessor, "tangents");
                 }
                 var h = GetTangentsJob(
                     input,

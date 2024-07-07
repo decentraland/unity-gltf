@@ -1,182 +1,73 @@
-// Copyright 2020-2022 Andreas Atteneder
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// SPDX-FileCopyrightText: 2023 Unity Technologies and the glTFast authors
+// SPDX-License-Identifier: Apache-2.0
 
 #if UNITY_ANIMATION
 
 using System;
 using System.Collections.Generic;
 
-namespace GLTFast.Schema {
+#endif
+
+namespace GLTFast.Schema
+{
+
+#if UNITY_ANIMATION
+    /// <inheritdoc />
     [Serializable]
-    public class GltfAnimation : NamedObject
+    public class Animation : AnimationBase<AnimationChannel,AnimationSampler> { }
+
+    /// <inheritdoc />
+    /// <typeparam name="TChannel">Animation channel type</typeparam>
+    /// <typeparam name="TSampler">Animation sampler type</typeparam>
+    [Serializable]
+    public abstract class AnimationBase<TChannel, TSampler> : AnimationBase
+        where TChannel : AnimationChannelBase
+        where TSampler : AnimationSampler
+    {
+        public TChannel[] channels;
+        public TSampler[] samplers;
+
+        public override IReadOnlyList<AnimationChannelBase> Channels => channels;
+
+        public override IReadOnlyList<AnimationSampler> Samplers => samplers;
+    }
+
+    /// <summary>
+    /// A keyframe animation.
+    /// </summary>
+    /// <seealso href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-animation"/>
+    [Serializable]
+    public abstract class AnimationBase : NamedObject
     {
         /// <summary>
         /// An array of channels, each of which targets an animation's sampler at a
         /// node's property. Different channels of the same animation can't have equal
         /// targets.
         /// </summary>
-        public AnimationChannel[] channels;
+        public abstract IReadOnlyList<AnimationChannelBase> Channels { get; }
+
         /// <summary>
         /// An array of samplers that combines input and output accessors with an
         /// interpolation algorithm to define a keyframe graph (but not its target).
         /// </summary>
-        public AnimationSampler[] samplers;
+        public abstract IReadOnlyList<AnimationSampler> Samplers { get; }
+
         internal void GltfSerialize(JsonWriter writer) {
             writer.AddObject();
-            GltfSerializeRoot(writer);
+            GltfSerializeName(writer);
             writer.Close();
             throw new NotImplementedException($"GltfSerialize missing on {GetType()}");
         }
     }
-    [Serializable]
-    public class AnimationChannel
-    {
-        public enum Path {
-            Unknown,
-            Invalid,
-            Translation,
-            Rotation,
-            Scale,
-            Weights,
-            Pointer
-        }
-        /// <summary>
-        /// The index of a sampler in this animation used to compute the value for the
-        /// target, e.g., a node's translation, rotation, or scale (TRS).
-        /// </summary>
-        public int sampler;
-        /// <summary>
-        /// The index of the node and TRS property to target.
-        /// </summary>
-        public AnimationChannelTarget target;
-        internal void GltfSerialize(JsonWriter writer) {
-            throw new NotImplementedException($"GltfSerialize missing on {GetType()}");
-        }
-    }
-    [Serializable]
-    public class AnimationChannelTarget {
-        /// <summary>
-        /// The index of the node to target.
-        /// </summary>
-        public int node;
-        /// <summary>
-        /// The name of the node's TRS property to modify.
-        /// </summary>
-        public string path;
-        AnimationChannel.Path m_Path;
-        private Dictionary<string, AnimationChannel.Path> animationChannelPathTable = new()
-        {
-            { "TRANSLATION", AnimationChannel.Path.Translation },
-            { "Translation", AnimationChannel.Path.Translation },
-            { "translation", AnimationChannel.Path.Translation },
-            { "ROTATION", AnimationChannel.Path.Rotation },
-            { "Rotation", AnimationChannel.Path.Rotation },
-            { "rotation", AnimationChannel.Path.Rotation },
-            { "SCALE", AnimationChannel.Path.Scale },
-            { "Scale", AnimationChannel.Path.Scale },
-            { "scale", AnimationChannel.Path.Scale },
-            { "WEIGHTS", AnimationChannel.Path.Weights },
-            { "Weights", AnimationChannel.Path.Weights },
-            { "weights", AnimationChannel.Path.Weights },
-        };
-        public AnimationChannel.Path GetPath() {
-            if (m_Path == AnimationChannel.Path.Unknown) {
-                if (!string.IsNullOrEmpty(path)) {
-                    try {
-                        if (!animationChannelPathTable.TryGetValue(path, out m_Path))
-                        {
-                            m_Path = (AnimationChannel.Path)Enum.Parse(typeof(AnimationChannel.Path), path, true);
-                            animationChannelPathTable.Add(path, m_Path);
-                        }
-                    }
-                    catch (ArgumentException) {
-                        m_Path = AnimationChannel.Path.Invalid;
-                    }
-                    path = null;
-                    return m_Path;
-                }
-                return AnimationChannel.Path.Invalid;
-            }
-            return m_Path;
-        }
-        internal void GltfSerialize(JsonWriter writer) {
-            throw new NotImplementedException($"GltfSerialize missing on {GetType()}");
-        }
-    }
-    public enum InterpolationType
-    {
-        Unknown,
-        Linear,
-        Step,
-        CubicSpline
-    }
-    [Serializable]
-    public class AnimationSampler
-    {
-        /// <summary>
-        /// The index of an accessor containing keyframe input values, e.G., time.
-        /// That accessor must have componentType `FLOAT`. The values represent time in
-        /// seconds with `time[0] >= 0.0`, and strictly increasing values,
-        /// i.e., `time[n + 1] > time[n]`
-        /// </summary>
-        public int input;
-        /// <summary>
-        /// Interpolation algorithm. When an animation targets a node's rotation,
-        /// and the animation's interpolation is `\"LINEAR\"`, spherical linear
-        /// interpolation (slerp) should be used to interpolate quaternions. When
-        /// interpolation is `\"STEP\"`, animated value remains constant to the value
-        /// of the first point of the timeframe, until the next timeframe.
-        /// </summary>
-        public string interpolation;
-        InterpolationType m_Interpolation;
-        private readonly Dictionary<string, InterpolationType> interpolationTypesTable =
-            new()
-            {
-                { "LINEAR", InterpolationType.Linear },
-                { "Linear", InterpolationType.Linear },
-                { "linear", InterpolationType.Linear },
-                { "STEP", InterpolationType.Step },
-                { "Step", InterpolationType.Step },
-                { "step", InterpolationType.Step },
-                { "CUBICSPLINE", InterpolationType.CubicSpline },
-                { "Cubicspline", InterpolationType.CubicSpline },
-                { "cubicspline", InterpolationType.CubicSpline },
-            };
-        public InterpolationType GetInterpolationType()
-        {
-            if (m_Interpolation != InterpolationType.Unknown) return m_Interpolation;
-            if (!string.IsNullOrEmpty(interpolation))
-            {
-                if (!interpolationTypesTable.TryGetValue(interpolation, out m_Interpolation))
-                {
-                    m_Interpolation = (InterpolationType)Enum.Parse(typeof(InterpolationType), interpolation, true);
-                    interpolationTypesTable.Add(interpolation, m_Interpolation);
-                }
-                interpolation = null;
-                return m_Interpolation;
-            }
-            m_Interpolation = InterpolationType.Linear;
-            return m_Interpolation;
-        }
-        /// <summary>
-        /// The index of an accessor, containing keyframe output values. Output and input
-        /// accessors must have the same `count`. When sampler is used with TRS target,
-        /// output accessor's componentType must be `FLOAT`.
-        /// </summary>
-        public int output;
-    }
-}
+#else
+    // Empty placeholder classes used in generic type definitions
+    /// <inheritdoc />
+    public class Animation : AnimationBase { }
 
+    /// <summary>
+    /// A keyframe animation.
+    /// </summary>
+    /// <seealso href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-animation"/>
+    public abstract class AnimationBase { }
 #endif // UNITY_ANIMATION
+}
