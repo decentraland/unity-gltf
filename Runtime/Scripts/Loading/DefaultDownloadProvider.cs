@@ -27,13 +27,12 @@ namespace GLTFast.Loading
     /// </summary>
     public class DefaultDownloadProvider : IDownloadProvider
     {
-
         /// <summary>
         /// Sends a URI request and waits for its completion.
         /// </summary>
         /// <param name="url">URI to request</param>
         /// <returns>Object representing the request</returns>
-        public async Task<IDownload> Request(Uri url)
+        public async Task<IDownload> RequestAsync(Uri url)
         {
             var req = new AwaitableDownload(url);
             await req.WaitAsync();
@@ -46,15 +45,14 @@ namespace GLTFast.Loading
         /// <param name="url">URI to request</param>
         /// <param name="nonReadable">If true, resulting texture is not CPU readable (uses less memory)</param>
         /// <returns>Object representing the request</returns>
-#pragma warning disable CS1998
-        public async Task<ITextureDownload> RequestTexture(Uri url, bool nonReadable, bool forceLinear)
+        public async Task<ITextureDownload> RequestTextureAsync(Uri url, bool nonReadable, bool forceLinear)
         {
-#pragma warning restore CS1998
 #if UNITY_WEBREQUEST_TEXTURE
             var req = new AwaitableTextureDownload(url,nonReadable);
             await req.WaitAsync();
             return req;
 #else
+            await Task.Yield();
             return null;
 #endif
         }

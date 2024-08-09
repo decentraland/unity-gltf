@@ -868,7 +868,7 @@ namespace GLTFast
         async Task<bool> LoadFromUri(Uri url, CancellationToken cancellationToken)
         {
 
-            var download = await m_DownloadProvider.Request(url);
+            var download = await m_DownloadProvider.RequestAsync(url);
             var success = download.Success;
 
             if (cancellationToken.IsCancellationRequested)
@@ -1399,7 +1399,7 @@ namespace GLTFast
             {
                 m_DownloadTasks = new Dictionary<int, Task<IDownload>>();
             }
-            m_DownloadTasks.Add(index, m_DownloadProvider.Request(url));
+            m_DownloadTasks.Add(index, m_DownloadProvider.RequestAsync(url));
             Profiler.EndSample();
         }
 
@@ -1476,8 +1476,8 @@ namespace GLTFast
             {
 #if UNITY_IMAGECONVERSION
                 var downloadTask = LoadImageFromBytes(imageIndex)
-                    ? (TextureDownloadBase) new TextureDownload<IDownload>(m_DownloadProvider.Request(url))
-                    : new TextureDownload<ITextureDownload>(m_DownloadProvider.RequestTexture(url,nonReadable,forceLinear));
+                    ? (TextureDownloadBase) new TextureDownload<IDownload>(m_DownloadProvider.RequestAsync(url))
+                    : new TextureDownload<ITextureDownload>(m_DownloadProvider.RequestTextureAsync(url,nonReadable,forceLinear));
                 if(m_TextureDownloadTasks==null) {
                     m_TextureDownloadTasks = new Dictionary<int, TextureDownloadBase>();
                 }
