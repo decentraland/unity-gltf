@@ -31,7 +31,7 @@ namespace GLTFast.Loading
         /// </summary>
         /// <param name="url">URI to request</param>
         /// <returns>Object representing the request</returns>
-        Task<IDownload> Request(Uri url);
+        Task<IDownload> RequestAsync(Uri url);
 
         /// <summary>
         /// Sends a URI request to load a texture
@@ -40,7 +40,7 @@ namespace GLTFast.Loading
         /// <param name="nonReadable">If true, resulting texture is not CPU readable (uses less memory)</param>
         /// <param name="forceLinear">Force linear color space</param>
         /// <returns>Object representing the request</returns>
-        Task<ITextureDownload> RequestTexture(Uri url, bool nonReadable, bool forceLinear);
+        Task<ITextureDownload> RequestTextureAsync(Uri url, bool nonReadable, bool forceLinear);
     }
 
     /// <summary>

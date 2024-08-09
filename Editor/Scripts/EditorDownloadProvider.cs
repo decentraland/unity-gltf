@@ -42,19 +42,18 @@ namespace GLTFast.Editor
         {
             previousDependencies = gltfAssetDependencies ?? Array.Empty<GltfAssetDependency>();
         }
-
-#pragma warning disable 1998
-        public async  Task<IDownload> Request(Uri url) {
+        
+        public async  Task<IDownload> RequestAsync(Uri url) {
             var req = new SyncFileLoader(GetDependencyFromPreviousImport(url, GltfAssetDependency.Type.Buffer));
+            await Task.Yield();
             return req;
         }
 
-        public async Task<ITextureDownload> RequestTexture(Uri url,bool nonReadable,bool forceLinear) {
+        public async Task<ITextureDownload> RequestTextureAsync(Uri url,bool nonReadable,bool forceLinear) {
             var req = new SyncTextureLoader(GetDependencyFromPreviousImport(url, GltfAssetDependency.Type.Texture));
+            await Task.Yield();
             return req;
         }
-
-#pragma warning restore 1998
 
         private Uri GetDependencyFromPreviousImport(Uri url, GltfAssetDependency.Type type)
         {

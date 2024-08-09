@@ -72,7 +72,7 @@ namespace GLTFast.Loading
         }
 
         /// <inheritdoc />
-        public async Task<IDownload> Request(Uri url)
+        public async Task<IDownload> RequestAsync(Uri url)
         {
             var req = new CustomHeaderDownload(url, RegisterHttpHeaders);
             await req.WaitAsync();
@@ -80,15 +80,14 @@ namespace GLTFast.Loading
         }
 
         /// <inheritdoc />
-#pragma warning disable CS1998
-        public async Task<ITextureDownload> RequestTexture(Uri url, bool nonReadable, bool forceLinear)
+        public async Task<ITextureDownload> RequestTextureAsync(Uri url, bool nonReadable, bool forceLinear)
         {
-#pragma warning restore CS1998
 #if UNITY_WEBREQUEST_TEXTURE
-            var req = new CustomHeaderTextureDownload(url,nonReadable,RegisterHttpHeaders);
+            var req = new CustomHeaderTextureDownload(url, nonReadable, RegisterHttpHeaders);
             await req.WaitAsync();
             return req;
 #else
+            await Task.Yield();
             return null;
 #endif
         }
