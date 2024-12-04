@@ -2414,23 +2414,6 @@ namespace GLTFast
 
                 instantiator.SetNodeName(nodeIndex, goName);
 
-                if (node.camera >= 0
-                    && gltf.cameras != null
-                    && node.camera < gltf.cameras.Length
-                    )
-                {
-                    instantiator.AddCamera(nodeIndex, (uint)node.camera);
-                }
-
-                if (node.extensions?.KHR_lights_punctual != null && gltf.extensions?.KHR_lights_punctual?.lights != null)
-                {
-                    var lightIndex = node.extensions.KHR_lights_punctual.light;
-                    if (lightIndex < gltf.extensions.KHR_lights_punctual.lights.Length)
-                    {
-                        instantiator.AddLightPunctual(nodeIndex, (uint)lightIndex);
-                    }
-                }
-
                 Profiler.EndSample();
             }
 
