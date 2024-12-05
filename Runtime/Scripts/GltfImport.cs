@@ -3052,23 +3052,6 @@ namespace GLTFast
                     }
                 }
 
-                if (node.camera >= 0
-                    && Root.Cameras != null
-                    && node.camera < Root.Cameras.Count
-                    )
-                {
-                    instantiator.AddCamera(nodeIndex, (uint)node.camera);
-                }
-
-                if (node.Extensions?.KHR_lights_punctual != null && Root.Extensions?.KHR_lights_punctual?.lights != null)
-                {
-                    var lightIndex = node.Extensions.KHR_lights_punctual.light;
-                    if (lightIndex < Root.Extensions.KHR_lights_punctual.lights.Length)
-                    {
-                        instantiator.AddLightPunctual(nodeIndex, (uint)lightIndex);
-                    }
-                }
-
                 Profiler.EndSample();
             }
 

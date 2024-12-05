@@ -143,6 +143,24 @@ namespace GLTFast
             )
         {
             Profiler.BeginSample("ApplyBones");
+            // FIX by jinfeng
+            unsafe
+            {
+                for (int i = 0; i < m_Data.Length; i++)
+                {
+                    VBones bones = m_Data[i];
+                    float total = bones.weights[0] + bones.weights[1] + bones.weights[2] + bones.weights[3];
+                    if (total > 0)
+                    {
+                        float mult = 1f / total;
+                        bones.weights[0] *= mult;
+                        bones.weights[1] *= mult;
+                        bones.weights[2] *= mult;
+                        bones.weights[3] *= mult;
+                        m_Data[i] = bones;
+                    }
+                }
+            }
             msh.SetVertexBufferData(m_Data, 0, 0, m_Data.Length, stream, flags);
             Profiler.EndSample();
         }
