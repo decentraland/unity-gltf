@@ -1461,7 +1461,7 @@ namespace GLTFast
             if (isKtx)
             {
 #if KTX
-                var downloadTask = m_DownloadProvider.Request(url);
+                var downloadTask = m_DownloadProvider.RequestAsync(url);
                 if(m_KtxDownloadTasks==null) {
                     m_KtxDownloadTasks = new Dictionary<int, Task<IDownload>>();
                 }
