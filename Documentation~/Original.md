@@ -14,6 +14,9 @@ Afterwards *glTFast* and further, optional packages are listed in the *Package M
 
 If you want to clone the GIT repository and installed the package locally (which is useful if you intend to develop glTFast itself), you have to checkout the branch `openupm`.
 
+> [!IMPORTANT]
+> Unlike the Unity fork, the `openupm` branch does not contain the full [content of the monorepo structure](./UpgradeGuides.md#repository-structure-monorepo)! It contains just a slightly modified variant of the package itself without tests, tools or test projects and is not recommended for [development](./development.md).
+
 The package identifier in the `main` branch was changed, which likely leads to errors if you've cloned it before and pulled that change. In that case either switch to the `openupm` branch or [transition to the new package identifier][transition].
 
 [fork]: ./UpgradeGuides#unity-fork
