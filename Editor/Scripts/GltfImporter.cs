@@ -49,6 +49,15 @@ using Object = UnityEngine.Object;
 
 namespace GLTFast.Editor
 {
+    // Helper class to store LOD scene data
+    class LodSceneData
+    {
+        public GameObject sceneGo;
+        public string sceneName;
+        public Dictionary<Mesh, List<Mesh>> meshToLodMeshes;
+        public int maxLodCount;
+        public string sourceDirectory;
+    }
 
 #if ENABLE_DEFAULT_GLB_IMPORTER
     [ScriptedImporter(1, new[] { "gltf", "glb" })]
@@ -80,6 +89,8 @@ namespace GLTFast.Editor
 
         HashSet<string> m_ImportedNames;
         HashSet<Object> m_ImportedObjects;
+        
+        List<LodSceneData> m_LodSceneDataList;
 
         // static fields ensure that they dont get deleted after saving the importer
         private static IMaterialGenerator customMaterialGenerator;
@@ -154,6 +165,7 @@ namespace GLTFast.Editor
             {
                 m_ImportedNames = new HashSet<string>();
                 m_ImportedObjects = new HashSet<Object>();
+                m_LodSceneDataList = new List<LodSceneData>();
 
                 if (instantiationSettings.SceneObjectCreation == SceneObjectCreation.Never)
                 {
@@ -215,11 +227,175 @@ namespace GLTFast.Editor
                     {
                         ctx.SetMainObject(sceneGo);
                     }
+
+                    // Dictionary to store mesh -> LOD meshes mapping
+                    Dictionary<Mesh, List<Mesh>> meshToLodMeshes = new Dictionary<Mesh, List<Mesh>>();
+                    const int targetLodCount = 4;  // Generate exactly 4 LOD levels (LOD0, LOD1, LOD2, LOD3)
+                    var sourceDirectory = System.IO.Path.GetDirectoryName(ctx.assetPath);
+                    
+                    // Create a subfolder for LOD meshes
+                    var meshesSubfolder = System.IO.Path.Combine(sourceDirectory, "LOD_Meshes");
+                    if (!System.IO.Directory.Exists(meshesSubfolder))
+                    {
+                        System.IO.Directory.CreateDirectory(meshesSubfolder);
+                        AssetDatabase.Refresh();
+                    }
+
+                    // First pass: Generate LODs and extract mesh files
+                    foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
+                    {
+                        var mesh = mf.sharedMesh;
+                        if (mesh == null || mesh.name.Contains("_collider"))
+                            continue;
+
+                        UnityEngine.Debug.Log("BUILDING MESH LOD UTILITY");
+                        // Generate exactly 4 LOD levels (parameter is maxLodLevels - 1, so 3 gives us 4 LODs)
+                        MeshLodUtility.GenerateMeshLods(mesh, 3);
+
+                        // Extract each LOD level as a separate mesh file
+                        int lodCount = Mathf.Min(mesh.lodCount, targetLodCount);
+                        int subMeshCount = mesh.subMeshCount;
+
+                        UnityEngine.Debug.Log($"Mesh {mesh.name} has {lodCount} LOD levels");
+
+                        List<Mesh> lodMeshes = new List<Mesh>();
+
+                        for (int lodIndex = 0; lodIndex < lodCount; lodIndex++)
+                        {
+                            // Create a clean new mesh for this LOD level
+                            Mesh lodMesh = new Mesh();
+                            lodMesh.name = $"{mesh.name}_LOD{lodIndex}";
+
+                            // Copy vertex data (no LOD structure)
+                            lodMesh.vertices = mesh.vertices;
+                            lodMesh.normals = mesh.normals;
+                            lodMesh.tangents = mesh.tangents;
+                            lodMesh.colors = mesh.colors;
+                            lodMesh.colors32 = mesh.colors32;
+                            lodMesh.uv = mesh.uv;
+                            lodMesh.uv2 = mesh.uv2;
+                            lodMesh.uv3 = mesh.uv3;
+                            lodMesh.uv4 = mesh.uv4;
+                            lodMesh.uv5 = mesh.uv5;
+                            lodMesh.uv6 = mesh.uv6;
+                            lodMesh.uv7 = mesh.uv7;
+                            lodMesh.uv8 = mesh.uv8;
+                            lodMesh.boneWeights = mesh.boneWeights;
+                            lodMesh.bindposes = mesh.bindposes;
+
+                            // Set submesh count
+                            lodMesh.subMeshCount = subMeshCount;
+
+                            // Set triangles for this specific LOD level only
+                            for (int subMeshIndex = 0; subMeshIndex < subMeshCount; subMeshIndex++)
+                            {
+                                int[] triangles = mesh.GetTriangles(subMeshIndex, lodIndex, false);
+                                lodMesh.SetTriangles(triangles, subMeshIndex, false);
+                            }
+
+                            lodMesh.RecalculateNormals();
+                            lodMesh.RecalculateBounds();
+
+                            // Save as separate .mesh file in the LOD_Meshes subfolder
+                            var meshFileName = $"{mesh.name}_LOD{lodIndex}.mesh";
+                            var meshFilePath = System.IO.Path.Combine(meshesSubfolder, meshFileName);
+
+                            AssetDatabase.CreateAsset(lodMesh, meshFilePath);
+                            UnityEngine.Debug.Log($"Extracted LOD{lodIndex} mesh to: {meshFilePath}");
+
+                            lodMeshes.Add(lodMesh);
+                        }
+
+                        meshToLodMeshes[mesh] = lodMeshes;
+                    }
+
+                    // Store LOD data to process after materials are created
+                    if (meshToLodMeshes.Count > 0)
+                    {
+                        m_LodSceneDataList.Add(new LodSceneData
+                        {
+                            sceneGo = sceneGo,
+                            sceneName = sceneName,
+                            meshToLodMeshes = meshToLodMeshes,
+                            maxLodCount = targetLodCount,
+                            sourceDirectory = sourceDirectory
+                        });
+                    }
                 }
 
                 CreateTextureAssets(ctx);
 
                 CreateMaterialAssets(ctx);
+
+                // Now that materials are created, generate LOD prefabs
+                foreach (var lodData in m_LodSceneDataList)
+                {
+                    for (int lodIndex = 0; lodIndex < lodData.maxLodCount; lodIndex++)
+                    {
+                        // Clone the entire scene GameObject
+                        GameObject lodSceneObject = Object.Instantiate(lodData.sceneGo);
+                        lodSceneObject.name = $"{lodData.sceneName}_LOD{lodIndex}";
+
+                        // Update all MeshFilters to use the corresponding LOD mesh
+                        foreach (var mf in lodSceneObject.GetComponentsInChildren<MeshFilter>())
+                        {
+                            var originalMesh = mf.sharedMesh;
+                            
+                            // Store the materials before changing the mesh
+                            var renderer = mf.GetComponent<MeshRenderer>();
+                            Material[] materials = null;
+                            if (renderer != null)
+                            {
+                                materials = renderer.sharedMaterials;
+                            }
+
+                            // Find the corresponding LOD mesh
+                            foreach (var kvp in lodData.meshToLodMeshes)
+                            {
+                                // Check if this is the same mesh (by name, removing " (Clone)" suffix if present)
+                                string cleanMeshName = originalMesh != null ? originalMesh.name.Replace(" (Clone)", "") : "";
+                                if (cleanMeshName == kvp.Key.name)
+                                {
+                                    Mesh lodMeshToUse = null;
+                                    
+                                    if (lodIndex < kvp.Value.Count)
+                                    {
+                                        // Use the specific LOD level if it exists
+                                        lodMeshToUse = kvp.Value[lodIndex];
+                                    }
+                                    else if (kvp.Value.Count > 0)
+                                    {
+                                        // Fall back to LOD0 (original mesh) if this LOD level doesn't exist
+                                        lodMeshToUse = kvp.Value[0];
+                                        UnityEngine.Debug.LogWarning($"LOD{lodIndex} not available for mesh {cleanMeshName}, using LOD0 instead");
+                                    }
+                                    
+                                    if (lodMeshToUse != null)
+                                    {
+                                        mf.sharedMesh = lodMeshToUse;
+                                        
+                                        // Ensure materials are preserved after mesh change
+                                        if (renderer != null && materials != null && materials.Length > 0)
+                                        {
+                                            renderer.sharedMaterials = materials;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Save as prefab file to disk
+                        var prefabFileName = $"{lodData.sceneName}_LOD{lodIndex}.prefab";
+                        var prefabFilePath = System.IO.Path.Combine(lodData.sourceDirectory, prefabFileName);
+
+                        PrefabUtility.SaveAsPrefabAsset(lodSceneObject, prefabFilePath);
+                        UnityEngine.Debug.Log($"Saved LOD prefab to disk: {prefabFilePath}");
+
+                        // Clean up the temporary GameObject
+                        Object.DestroyImmediate(lodSceneObject);
+                    }
+                }
 
                 var meshes = m_Gltf.GetMeshes();
                 if (meshes != null)
@@ -302,6 +478,8 @@ namespace GLTFast.Editor
                 Debug.LogError($"Failed to import {assetPath} (see inspector for details)", this);
             }
             reportItems = reportItemList.ToArray();
+
+
         }
 
         protected virtual void CreateAnimationClips(AssetImportContext ctx)
