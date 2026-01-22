@@ -61,7 +61,7 @@ jobs:
       image: europe-docker.pkg.dev/unity-cds-services-prd/ds-docker/unity-ci-format:latest@sha256:73b38fb713c2b95a142ffe870c6e130edda9d3aad61adadfda24fe985973f6b1
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.GIT_BRANCH }}
           filter: blob:none
