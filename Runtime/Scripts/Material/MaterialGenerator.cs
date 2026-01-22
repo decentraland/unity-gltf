@@ -281,7 +281,17 @@ namespace GLTFast.Materials
         protected abstract UnityEngine.Material GenerateDefaultMaterial(bool pointsSupport = false);
 
         /// <summary>
-        /// Tries to load a shader and covers error handling.
+        /// Loads a shader by name and does eventual error reporting.
+        /// </summary>
+        /// <param name="shaderName">The requested shader's name.</param>
+        /// <returns>Requested shader or null if it couldn't be loaded.</returns>
+        protected virtual Shader FindShader(string shaderName)
+        {
+            return FindShader(shaderName, Logger);
+        }
+
+        /// <summary>
+        /// Loads a shader by name and does eventual error reporting.
         /// </summary>
         /// <param name="shaderName">The requested shader's name.</param>
         /// <param name="logger">Logger used for reporting errors.</param>

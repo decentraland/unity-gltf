@@ -9,11 +9,7 @@ void NormalInTangentSpace_float(UnityTexture2D normal_texture, float2 uv, float 
     packed_normal.x *= packed_normal.w;
 
     normal.xy = packed_normal.xy * 2 - 1;
-#if (SHADER_TARGET >= 30)
-    // SM2.0: instruction count limitation
-    // SM2.0: normal scaler is not supported
     normal.xy *= normal_scale;
-#endif
     normal.z = sqrt(1.0 - saturate(dot(normal.xy, normal.xy)));
 }
 

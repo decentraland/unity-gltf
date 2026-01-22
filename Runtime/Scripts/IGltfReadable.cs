@@ -38,11 +38,15 @@ namespace GLTFast
         /// <summary>
         /// Number of images
         /// </summary>
+        /// <seealso cref="TextureCount"/>
+        /// <seealso cref="GetTexture"/>
+        [Obsolete("Use TextureCount and GetTexture instead. This property will be removed in future releases.")]
         int ImageCount { get; }
 
         /// <summary>
         /// Number of textures
         /// </summary>
+        /// <seealso cref="GetTexture"/>
         int TextureCount { get; }
 
         /// <summary>
@@ -60,14 +64,18 @@ namespace GLTFast
         Material GetDefaultMaterial();
 
         /// <summary>
-        /// Get texture by glTF image index
+        /// Get imported glTF image by index.
+        /// <b>Warning:</b> Only works temporarily during loading phase!
+        /// It's recommended to work with <see cref="GetTexture"/> instead.
         /// </summary>
         /// <param name="index">glTF image index</param>
         /// <returns>Loaded Unity texture</returns>
+        /// <seealso cref="GetTexture"/>
+        [Obsolete("Use GetTexture instead. This method will be removed in future releases.")]
         Texture2D GetImage(int index = 0);
 
         /// <summary>
-        /// Get texture by glTF texture index
+        /// Get imported glTF texture by index.
         /// </summary>
         /// <param name="index">glTF texture index</param>
         /// <returns>Loaded Unity texture</returns>

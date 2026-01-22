@@ -38,12 +38,20 @@ namespace GLTFast
         /// <summary>
         /// Scene to load (-1 loads glTFs default scene)
         /// </summary>
-        protected int SceneId => sceneId;
+        public int SceneId
+        {
+            get => sceneId;
+            set => sceneId = value;
+        }
 
         /// <summary>
         /// If true, the first animation clip starts playing right after instantiation.
         /// </summary>
-        public bool PlayAutomatically => playAutomatically;
+        public bool PlayAutomatically
+        {
+            get => playAutomatically;
+            set => playAutomatically = value;
+        }
 
         /// <summary>
         /// If true, url is treated as relative StreamingAssets path

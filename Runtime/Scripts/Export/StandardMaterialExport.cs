@@ -131,12 +131,6 @@ namespace GLTFast.Export
             }
 
             var isPbrMetallicRoughness = IsPbrMetallicRoughness(uMaterial);
-            var needsMetalRoughTexture =
-                isPbrMetallicRoughness &&
-                (
-                    HasMetallicGlossMap(uMaterial)
-                    || uMaterial.IsKeywordEnabled(k_KeywordSmoothnessTextureAlbedoChannelA)
-                );
 
             Texture2D occlusionTexture = null;
             Texture2D metalGlossTexture = null;
@@ -151,6 +145,13 @@ namespace GLTFast.Export
             {
                 mainTexProperty = k_ColorTexture;
             }
+
+            var needsMetalRoughTexture =
+                isPbrMetallicRoughness &&
+                (
+                    HasMetallicGlossMap(uMaterial)
+                    || HasSmoothnessInAlbedoMapAlpha(uMaterial, mainTexProperty)
+                );
 
             if (IsUnlit(uMaterial))
             {
@@ -260,6 +261,13 @@ namespace GLTFast.Export
             }
 
             return success;
+        }
+
+        static bool HasSmoothnessInAlbedoMapAlpha(UnityEngine.Material uMaterial, int mainTexProperty)
+        {
+            return uMaterial.IsKeywordEnabled(k_KeywordSmoothnessTextureAlbedoChannelA)
+                && uMaterial.HasProperty(mainTexProperty)
+                && uMaterial.GetTexture(mainTexProperty) is not null;
         }
 
         static bool IsPbrMetallicRoughness(UnityEngine.Material material)

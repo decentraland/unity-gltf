@@ -224,7 +224,13 @@ half3 Emission(float2 uv)
 #ifndef _EMISSION
     return 0;
 #else
+#ifdef UNITY_COLORSPACE_GAMMA
+    // Once we support the KHR_materials_emissive_strength, the emissiveFactor values might exceed 1.0
+    // and then this calculation in gamma space will not be correct anymore.
+    return tex2D(emissiveTexture, uv).rgb * LinearToGammaSpace(emissiveFactor.rgb);
+#else
     return tex2D(emissiveTexture, uv).rgb * emissiveFactor.rgb;
+#endif
 #endif
 }
 

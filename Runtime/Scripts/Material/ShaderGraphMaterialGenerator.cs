@@ -531,16 +531,21 @@ namespace GLTFast.Materials {
         }
 #endif
 
-        protected Shader LoadShaderByName(string shaderName) {
+        /// <summary>
+        /// Loads a shader by name and does eventual error reporting.
+        /// </summary>
+        /// <param name="shaderName">The requested shader's name.</param>
+        /// <returns>Requested shader or null if it couldn't be loaded.</returns>
+        protected virtual Shader LoadShaderByName(string shaderName) {
 #if UNITY_EDITOR
             var shaderPath = $"{k_ShaderPathPrefix}{shaderName}.shadergraph";
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
             if (shader == null) {
-                Logger?.Error($"Cannot load shader at path {shaderPath}");
+                Logger?.Error(LogCode.ShaderMissing, shaderPath);
             }
             return shader;
 #else
-            return FindShader($"{k_ShaderGraphsPrefix}{shaderName}", Logger);
+            return FindShader($"{k_ShaderGraphsPrefix}{shaderName}");
 #endif
         }
 

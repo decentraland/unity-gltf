@@ -850,14 +850,11 @@ namespace GLTFast
         /// </summary>
         public int MaterialCount => m_Materials?.Length ?? 0;
 
-        /// <summary>
-        /// Number of images
-        /// </summary>
+        /// <inheritdoc cref="IGltfReadable.ImageCount"/>
+        [Obsolete("Use TextureCount and GetTexture instead. This property will be removed in future releases.")]
         public int ImageCount => m_Images?.Length ?? 0;
 
-        /// <summary>
-        /// Number of textures
-        /// </summary>
+        /// <inheritdoc cref="IGltfReadable.TextureCount"/>
         public int TextureCount => m_Textures?.Length ?? 0;
 
         /// <summary>
@@ -932,11 +929,8 @@ namespace GLTFast
             return Task.FromResult(GetDefaultMaterial());
         }
 
-        /// <summary>
-        /// Returns a texture by its glTF image index
-        /// </summary>
-        /// <param name="index">glTF image index</param>
-        /// <returns>Corresponding Unity texture</returns>
+        /// <inheritdoc cref="IGltfReadable.GetImage"/>
+        [Obsolete("Use GetTexture instead. This method will be removed in future releases.")]
         public Texture2D GetImage(int index = 0)
         {
             if (m_Images != null && index >= 0 && index < m_Images.Length)
@@ -946,11 +940,7 @@ namespace GLTFast
             return null;
         }
 
-        /// <summary>
-        /// Returns a texture by its glTF texture index
-        /// </summary>
-        /// <param name="index">glTF texture index</param>
-        /// <returns>Corresponding Unity texture</returns>
+        /// <inheritdoc cref="IGltfReadable.GetTexture"/>
         public Texture2D GetTexture(int index = 0)
         {
             if (m_Textures != null && index >= 0 && index < m_Textures.Length)

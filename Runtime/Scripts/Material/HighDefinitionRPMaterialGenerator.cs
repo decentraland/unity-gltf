@@ -4,12 +4,14 @@
 #if USING_HDRP
 
 using System;
+using GLTFast.Schema;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
+using Material = UnityEngine.Material;
 
 namespace GLTFast.Materials {
 
@@ -42,6 +44,13 @@ namespace GLTFast.Materials {
 
         static bool s_MetallicStackLitShaderQueried;
         static Shader s_MetallicStackLitShader;
+
+        public override Material GenerateMaterial(MaterialBase gltfMaterial, IGltfReadable gltf, bool pointsSupport = false)
+        {
+            var material = base.GenerateMaterial(gltfMaterial, gltf, pointsSupport);
+            HDMaterial.ValidateMaterial(material);
+            return material;
+        }
 
         protected override void SetDoubleSided(Schema.MaterialBase gltfMaterial, Material material) {
             base.SetDoubleSided(gltfMaterial,material);

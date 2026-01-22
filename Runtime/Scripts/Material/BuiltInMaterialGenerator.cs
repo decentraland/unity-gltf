@@ -80,12 +80,12 @@ namespace GLTFast.Materials
         /// <returns>Metallic/Roughness shader</returns>
         // Needs to be non-static outside of the Editor.
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        Shader FinderShaderMetallicRoughness()
+        protected virtual Shader FindShaderMetallicRoughness()
         {
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath<Shader>($"{k_ShaderPathPrefix}{k_PbrMetallicRoughnessShaderPath}");
 #else
-            return FindShader(k_PbrMetallicRoughnessShaderName, Logger);
+            return FindShader(k_PbrMetallicRoughnessShaderName);
 #endif
         }
 
@@ -95,12 +95,12 @@ namespace GLTFast.Materials
         /// <returns>Specular/Glossiness shader</returns>
         // Needs to be non-static outside of the Editor.
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        Shader FinderShaderSpecularGlossiness()
+        protected virtual Shader FindShaderSpecularGlossiness()
         {
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath<Shader>($"{k_ShaderPathPrefix}{k_PbrSpecularGlossinessShaderPath}");
 #else
-            return FindShader(k_PbrSpecularGlossinessShaderName, Logger);
+            return FindShader(k_PbrSpecularGlossinessShaderName);
 #endif
         }
 
@@ -110,12 +110,12 @@ namespace GLTFast.Materials
         /// <returns>Unlit shader</returns>
         // Needs to be non-static outside of the Editor.
         // ReSharper disable once MemberCanBeMadeStatic.Local
-        Shader FinderShaderUnlit()
+        protected virtual Shader FindShaderUnlit()
         {
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath<Shader>($"{k_ShaderPathPrefix}{k_UnlitShaderPath}");
 #else
-            return FindShader(k_UnlitShaderName, Logger);
+            return FindShader(k_UnlitShaderName);
 #endif
         }
 
@@ -123,7 +123,7 @@ namespace GLTFast.Materials
         {
             if (m_PbrMetallicRoughnessShader == null)
             {
-                m_PbrMetallicRoughnessShader = FinderShaderMetallicRoughness();
+                m_PbrMetallicRoughnessShader = FindShaderMetallicRoughness();
             }
             if (m_PbrMetallicRoughnessShader == null)
             {
@@ -145,7 +145,7 @@ namespace GLTFast.Materials
         {
             if (m_PbrSpecularGlossinessShader == null)
             {
-                m_PbrSpecularGlossinessShader = FinderShaderSpecularGlossiness();
+                m_PbrSpecularGlossinessShader = FindShaderSpecularGlossiness();
             }
             if (m_PbrSpecularGlossinessShader == null)
             {
@@ -167,7 +167,7 @@ namespace GLTFast.Materials
         {
             if (m_UnlitShader == null)
             {
-                m_UnlitShader = FinderShaderUnlit();
+                m_UnlitShader = FindShaderUnlit();
             }
             if (m_UnlitShader == null)
             {
@@ -385,7 +385,7 @@ namespace GLTFast.Materials
 
             if (gltfMaterial.Emissive != Color.black)
             {
-                material.SetColor(MaterialProperty.EmissiveFactor, gltfMaterial.Emissive.gamma);
+                material.SetColor(MaterialProperty.EmissiveFactor, gltfMaterial.Emissive);
                 material.EnableKeyword(k_EmissionKeyword);
             }
 
