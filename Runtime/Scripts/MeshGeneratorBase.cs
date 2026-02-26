@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System;
+using System.Threading;
 using UnityEngine.Rendering;
 using System.Threading.Tasks;
 
@@ -30,10 +31,11 @@ namespace GLTFast
             m_MeshName = meshName;
         }
 
-        public async Task<UnityEngine.Mesh> CreateMeshResult()
+        public async Task<UnityEngine.Mesh> CreateMeshResult(CancellationToken cancellationToken)
         {
             while (!IsCompleted)
             {
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
                 await Task.Yield();
             }
 

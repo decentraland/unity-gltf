@@ -75,7 +75,8 @@ namespace GLTFast {
             );
 
             var dedicatedSceneEntity = m_Settings.SceneObjectCreation == SceneObjectCreation.Always
-                || m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && nodeIndices.Length > 1;
+                || (m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes
+                    && nodeIndices is { Length: > 1 });
 
             if (dedicatedSceneEntity) {
                 var sceneEntity = m_EntityManager.CreateEntity(m_Parent == Entity.Null ? m_SceneArchetype : m_NodeArchetype);

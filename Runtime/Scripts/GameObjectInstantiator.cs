@@ -105,7 +105,9 @@ namespace GLTFast
 
             GameObject sceneGameObject;
             if (m_Settings.SceneObjectCreation == SceneObjectCreation.Never
-                || m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && rootNodeIndices.Length == 1)
+                || (m_Settings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes
+                    && (rootNodeIndices == null || rootNodeIndices.Length == 1))
+                )
             {
                 sceneGameObject = m_Parent.gameObject;
             }

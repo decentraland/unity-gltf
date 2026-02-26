@@ -7,6 +7,7 @@
 
 #if KTX_IS_ENABLED
 
+using System.Threading;
 using System.Threading.Tasks;
 using KtxUnity;
 using Unity.Collections;
@@ -21,12 +22,14 @@ namespace GLTFast {
             m_KtxTexture = new KtxTexture();
         }
 
-        public override async Task<TextureResult> LoadTexture2D(bool linear, bool readable) {
+        public override async Task<TextureResult> LoadTexture2D(bool linear, bool readable, CancellationToken cancellationToken)
+        {
             var errorCode = m_KtxTexture.Open(m_Data);
             if (errorCode != ErrorCode.Success) {
                 return new TextureResult(errorCode);
             }
 
+            // TODO implement cancellation in KTX package
             var result = await m_KtxTexture.LoadTexture2D(linear, readable);
 
             m_KtxTexture.Dispose();

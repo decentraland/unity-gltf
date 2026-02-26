@@ -50,6 +50,8 @@ namespace GLTFast.Export {
                 }
             };
 
+            var mainTexProperty = uMaterial.HasProperty(k_BaseColorMap) ? k_BaseColorMap : MainTexProperty;
+
             SetAlphaModeAndCutoff(uMaterial, material);
             material.doubleSided = IsDoubleSided(uMaterial, MaterialProperty.CullMode);
 
@@ -77,7 +79,7 @@ namespace GLTFast.Export {
                 if (emissionTex != null) {
                     if(emissionTex is Texture2D) {
                         material.emissiveTexture = ExportTextureInfo(emissionTex, gltf);
-                        ExportTextureTransform(material.emissiveTexture, uMaterial, k_EmissionColorMap, gltf);
+                        ExportTextureTransform(material.emissiveTexture, uMaterial, mainTexProperty, gltf);
                     } else {
                         logger?.Error(LogCode.TextureInvalidType, "emission", material.name );
                         success = false;
@@ -98,7 +100,7 @@ namespace GLTFast.Export {
                 if (normalTex != null) {
                     if(normalTex is Texture2D) {
                         material.normalTexture = ExportNormalTextureInfo(normalTex, uMaterial, gltf, k_NormalScale);
-                        ExportTextureTransform(material.normalTexture, uMaterial, k_NormalMap, gltf);
+                        ExportTextureTransform(material.normalTexture, uMaterial, mainTexProperty, gltf);
                     } else {
                         logger?.Error(LogCode.TextureInvalidType, "normal", uMaterial.name );
                         success = false;
@@ -124,7 +126,7 @@ namespace GLTFast.Export {
                         if (coatMaskTex is Texture2D)
                         {
                             material.extensions.KHR_materials_clearcoat.clearcoatTexture = ExportTextureInfo(coatMaskTex, gltf);
-                            ExportTextureTransform(material.extensions.KHR_materials_clearcoat.clearcoatTexture, uMaterial, k_CoatMaskMap, gltf);
+                            ExportTextureTransform(material.extensions.KHR_materials_clearcoat.clearcoatTexture, uMaterial, mainTexProperty, gltf);
                         }
                         else
                         {
@@ -134,8 +136,6 @@ namespace GLTFast.Export {
                     }
                 }
             }
-
-            var mainTexProperty = uMaterial.HasProperty(k_BaseColorMap) ? k_BaseColorMap : MainTexProperty;
 
             if(IsUnlit(uMaterial)) {
                 ExportUnlit(material, uMaterial, mainTexProperty, gltf, logger);

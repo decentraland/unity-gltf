@@ -34,7 +34,7 @@ namespace GLTFast.Export
         {
             if (!TryFindMatchingGltfMaterialExport(shaderName, out var materialExport))
             {
-                s_LitMaterialExport ??= new StandardMaterialExport();
+                s_LitMaterialExport ??= new BuiltInStandardMaterialExport();
                 materialExport = s_LitMaterialExport;
             }
             return materialExport;

@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.16.1] - 2026-02-19
+
+### Added
+- (Test) *Empty Scene* test asset.
+- (Import) Support for 16-bit mesh indices reduces memory footprint for meshes with less than 65k vertices per sub-mesh.
+  - 16-bit indices are not converted to 32-bit anymore.
+  - 8-bit indices ar converted to 16-bit (instead of 32-bit).
+
+### Changed
+- [GltfImport.Load](xref:GLTFast.GltfImportBase.Load*), [GltfImport.InstantiateSceneAsync](xref:GLTFast.GltfImportBase.InstantiateSceneAsync*) and their variants now throw an `OperationCanceledException` when cancelled before completion.
+- Replaced the generic [StandardMaterialExport](xref:GLTFast.Export.StandardMaterialExport) with specializations.
+  - [LitMaterialExport](xref:GLTFast.Export.LitMaterialExport) for Universal Render Pipeline Lit shader material export.
+  - [BuiltInStandardMaterialExport](xref:GLTFast.Export.BuiltInStandardMaterialExport) for Built-in Render Pipeline Standard shader material export.
+- (Performance) Improved performance of mesh indices conversion for draw modes line loop, triangle strips and triangle fan.
+
+### Fixed
+- [GltfImport.InstantiateSceneAsync](xref:GLTFast.GltfImportBase.InstantiateSceneAsync*) properly handles an invalid scene index parameter.
+- [GltfImport](xref:GLTFast.GltfImportBase) waits for downloads to complete before attempting disposal during cancellation.
+- Projects depending on an outdated version of [meshoptimizer mesh compression for Unity] may suppress the corresponding compiler error by using the `GLTFAST_IGNORE_MESHOPT_OUTDATED_ERROR` scripting define symbol.
+- (Shader) Incorrect alpha blending/clipping due to invalid color space conversion on the base color map alpha and vertex color alpha values (affected shader graphs only; fixes [#800](https://github.com/atteneder/glTFast/issues/800)).
+- (Shader) Built-in render pipeline shaders metallic-roughness and specular-glossiness now factor in vertex color alpha values.
+- (Shader) All built-in render pipeline shaders apply vertex color alpha values linearly.
+- (Shader) Shader graph *glTF-pbrSpecularGlossiness* does not disregard the *Glossiness* parameter anymore.
+- (Import) Cases when specular-glossiness material setup would be incomplete at runtime.
+- (Import) Removed remains of incorrectly signed integer indices.
+- (Export) Smoothness value property is exported correctly across more combination of settings for Universal Render Pipeline Lit shader based materials (fixes [#795](https://github.com/atteneder/glTFast/issues/795) and [796](https://github.com/atteneder/glTFast/issues/796)).
+- (Export) When a Lit/Standard material has a smoothness texture, their smoothness value is baked into the resulting roughness channel (of the ORM map). This preserves the visual appearance, but is a lossy operation if the smoothness value is not `1.0` (fixes [#795](https://github.com/atteneder/glTFast/issues/795) and [796](https://github.com/atteneder/glTFast/issues/796)).
+- (Export) `MetaMaterialExportBuiltIn` is used for built-in material export (unless `GLTFAST_BUILTIN_SHADER_GRAPH` is set).
+- (Import) Solved exception when scenes with no nodes are loaded.
+- (Import) Triangle fan meshes with the center vertex not being the first vertex import correctly now.
+- (Test) Graphics tests are more stable/consistent due to dedicated scene.
+- (Shader) Incorrect normal unpacking when using default normal map on Android (fixes [#791](https://github.com/atteneder/glTFast/issues/791) and [802](https://github.com/atteneder/glTFast/issues/802)).
+- (Export) Texture scaling not preserved on URP/Lit export (fixes [#805](https://github.com/atteneder/glTFast/issues/805)).
+
+### Deprecated
+- Generic built-in/Universal render pipeline [StandardMaterialExport](xref:GLTFast.Export.StandardMaterialExport).
+
 ## [6.16.0] - 2026-01-20
 
 ### Added

@@ -20,8 +20,8 @@
 
 #if MESHOPT_IS_RECENT
 #define MESHOPT_IS_ENABLED
-#elif MESHOPT_IS_INSTALLED
-#error You have to update the *meshoptimizer mesh compression for Unity* package in package manager to enable support for decoding meshoptimizer compressed buffer views in *glTFast*.
+#elif MESHOPT_IS_INSTALLED && !GLTFAST_IGNORE_MESHOPT_OUTDATED_ERROR
+#error You have to update the <a href="https://docs.unity3d.com/Packages/com.unity.meshopt.decompress@latest/">meshoptimizer mesh compression for Unity package</a> in package manager to enable support for decoding meshoptimizer compressed buffer views in glTFast. Add "GLTFAST_IGNORE_MESHOPT_OUTDATED_ERROR" to your project's scripting define symbols to temporarily suppress this error.
 #endif
 
 // #define MEASURE_TIMINGS
@@ -184,12 +184,13 @@ namespace GLTFast
         static MeshComparer s_MeshComparer = new MeshComparer();
 
         /// <summary>Logger used by this glTF import instance.</summary>
-        public ICodeLogger Logger { get; }
+        public ICodeLogger Logger => m_Context.Logger;
 
         /// <summary>Defer agent used by this glTF import instance.</summary>
-        public IDeferAgent DeferAgent { get; }
+        public IDeferAgent DeferAgent => m_Context.DeferAgent;
 
-        IDownloadProvider m_DownloadProvider;
+        ImportContext m_Context;
+
         IMaterialGenerator m_MaterialGenerator;
 
         Dictionary<Type, ImportAddonInstance> m_ImportInstances;
@@ -310,8 +311,6 @@ namespace GLTFast
             ICodeLogger logger = null
             )
         {
-            m_DownloadProvider = downloadProvider ?? new DefaultDownloadProvider();
-
             if (deferAgent == null)
             {
                 if (s_DefaultDeferAgent == null
@@ -325,15 +324,15 @@ namespace GLTFast
                     // Adding a DefaultDeferAgent component will make it un-register via <see cref="UnsetDefaultDeferAgent"/>
                     defaultDeferAgentGameObject.AddComponent<DefaultDeferAgent>();
                 }
-                DeferAgent = s_DefaultDeferAgent;
-            }
-            else
-            {
-                DeferAgent = deferAgent;
+                deferAgent = s_DefaultDeferAgent;
             }
             m_MaterialGenerator = materialGenerator ?? MaterialGenerator.GetDefaultMaterialGenerator();
 
-            Logger = logger;
+            m_Context = new ImportContext(
+                downloadProvider ?? new DefaultDownloadProvider(),
+                logger,
+                deferAgent
+                );
 
             ImportAddonRegistry.InjectAllAddons(this);
         }
@@ -406,6 +405,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> Load(
             string url,
             ImportSettings importSettings = null,
@@ -423,6 +423,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> Load(
             Uri url,
             ImportSettings importSettings = null,
@@ -441,6 +442,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> Load(
             byte[] data,
             Uri uri = null,
@@ -467,6 +469,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> Load(
             NativeArray<byte>.ReadOnly data,
             Uri uri = null,
@@ -478,6 +481,8 @@ namespace GLTFast
             {
                 return await LoadGltfBinaryInternal(data, uri, importSettings, cancellationToken);
             }
+
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
 
             // Fallback interpreting data as string
             // TODO: ToArray does another, slow memcpy! Find a better solution.
@@ -493,6 +498,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> LoadFile(
             string localPath,
             Uri uri = null,
@@ -519,6 +525,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> LoadStream(
             Stream stream,
             Uri uri = null,
@@ -542,7 +549,7 @@ namespace GLTFast
                 return false;
             }
 
-            if (cancellationToken.IsCancellationRequested) return false;
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
 
             if (GltfGlobals.IsGltfBinary(firstBytes))
             {
@@ -579,7 +586,14 @@ namespace GLTFast
                 var predictedTime = length / (float)k_MemCopySpeed;
                 if (DeferAgent.ShouldDefer(predictedTime))
                 {
-                    await Task.Run(() => CopyStreamToMemory(stream, mem), cancellationToken);
+                    try
+                    {
+                        await Task.Run(() => CopyStreamToMemory(stream, mem), cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        cancellationToken.ThrowIfCancellationRequestedWithTracking();
+                    }
                 }
                 else
 #endif // GLTFAST_THREADS
@@ -605,8 +619,9 @@ namespace GLTFast
 
             reader.Dispose();
 
-            return !cancellationToken.IsCancellationRequested
-                && await LoadGltfJson(json, uri, importSettings, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
+            return await LoadGltfJson(json, uri, importSettings, cancellationToken);
         }
 
         /// <summary>
@@ -619,6 +634,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         [Obsolete("Use the generic Load instead.")]
         public async Task<bool> LoadGltfBinary(
             byte[] bytes,
@@ -646,6 +662,7 @@ namespace GLTFast
         /// <param name="importSettings">Import Settings (<see cref="ImportSettings"/> for details)</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if loading was mainly successful and no critical error occurred, false otherwise</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         public async Task<bool> LoadGltfJson(
             string json,
             Uri uri = null,
@@ -653,12 +670,25 @@ namespace GLTFast
             CancellationToken cancellationToken = default
             )
         {
-            m_Settings = importSettings ?? new ImportSettings();
-            var success =
-                await LoadGltf(json, uri)
-                && await LoadContent()
-                && await Prepare();
-            DisposeVolatileData();
+            bool success;
+            try
+            {
+                m_Settings = importSettings ?? new ImportSettings();
+                success =
+                    await LoadGltf(json, uri, cancellationToken)
+                    && await LoadContent(cancellationToken)
+                    && await Prepare(cancellationToken);
+            }
+            catch (OperationCanceledException e)
+            {
+                Logger?.Info(LogCode.OperationCanceled, e.Message);
+                throw;
+            }
+            finally
+            {
+                await DisposeVolatileData();
+            }
+
             LoadingError = !success;
             LoadingDone = true;
             return success;
@@ -699,6 +729,7 @@ namespace GLTFast
         /// <param name="parent">Transform that the scene will get parented to</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if the main scene was instantiated or was not set. False in case of errors.</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         /// <seealso cref="DefaultSceneIndex"/>
         public async Task<bool> InstantiateMainSceneAsync(
             Transform parent,
@@ -717,6 +748,7 @@ namespace GLTFast
         /// <param name="instantiator">Instantiator implementation; Receives and processes the scene data</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if the main scene was instantiated or was not set. False in case of errors.</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         /// <seealso cref="DefaultSceneIndex"/>
         public async Task<bool> InstantiateMainSceneAsync(
             IInstantiator instantiator,
@@ -743,6 +775,7 @@ namespace GLTFast
         /// <param name="sceneIndex">Index of the scene to be instantiated</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if the scene was instantiated. False in case of errors.</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         /// <seealso cref="SceneCount"/>
         /// <seealso cref="GetSceneName"/>
         public async Task<bool> InstantiateSceneAsync(
@@ -752,7 +785,7 @@ namespace GLTFast
             )
         {
             if (!LoadingDone || LoadingError) return false;
-            if (sceneIndex < 0 || sceneIndex > Root.Scenes.Count) return false;
+            if (sceneIndex < 0 || sceneIndex >= Root.Scenes.Count) return false;
             var instantiator = new GameObjectInstantiator(this, parent);
             var success = await InstantiateSceneAsync(instantiator, sceneIndex, cancellationToken);
             return success;
@@ -765,6 +798,7 @@ namespace GLTFast
         /// <param name="sceneIndex">Index of the scene to be instantiated</param>
         /// <param name="cancellationToken">Token to submit cancellation requests. The default value is None.</param>
         /// <returns>True if the scene was instantiated. False in case of errors.</returns>
+        /// <exception cref="OperationCanceledException">Thrown when cancelled before completion.</exception>
         /// <seealso cref="SceneCount"/>
         /// <seealso cref="GetSceneName"/>
         public async Task<bool> InstantiateSceneAsync(
@@ -774,8 +808,16 @@ namespace GLTFast
             )
         {
             if (!LoadingDone || LoadingError) return false;
-            if (sceneIndex < 0 || sceneIndex > Root.Scenes.Count) return false;
-            await InstantiateSceneInternal(instantiator, sceneIndex);
+            if (sceneIndex < 0 || sceneIndex >= Root.Scenes.Count) return false;
+            try
+            {
+                await InstantiateSceneInternal(instantiator, sceneIndex, cancellationToken);
+            }
+            catch (OperationCanceledException e)
+            {
+                Logger?.Info(LogCode.OperationCanceled, e.Message);
+                throw;
+            }
             return true;
         }
 
@@ -904,13 +946,13 @@ namespace GLTFast
         {
 #if UNITY_EDITOR
             if (defaultMaterial == null) {
-                m_MaterialGenerator.SetLogger(Logger);
+                m_MaterialGenerator.SetLogger(m_Context.Logger);
                 defaultMaterial = m_MaterialGenerator.GetDefaultMaterial(m_DefaultMaterialPointsSupport);
                 m_MaterialGenerator.SetLogger(null);
             }
             return defaultMaterial;
 #else
-            m_MaterialGenerator.SetLogger(Logger);
+            m_MaterialGenerator.SetLogger(m_Context.Logger);
             var material = m_MaterialGenerator.GetDefaultMaterial(m_DefaultMaterialPointsSupport);
             m_MaterialGenerator.SetLogger(null);
             return material;
@@ -1238,53 +1280,68 @@ namespace GLTFast
 
         async Task<bool> LoadFromUri(Uri url, CancellationToken cancellationToken)
         {
-
-            var download = await m_DownloadProvider.Request(url);
-            var success = download.Success;
-
-            if (cancellationToken.IsCancellationRequested)
+            bool success;
+            IDownload download = null;
+            try
             {
-                return true;
-            }
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
 
-            if (success)
-            {
+                download = await m_Context.DownloadProvider.Request(url);
+                success = download.Success;
 
-                var gltfBinary = download.IsBinary ?? UriHelper.IsGltfBinary(url);
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
 
-                if (gltfBinary ?? false)
+                if (success)
                 {
-                    m_VolatileDisposables ??= new List<IDisposable>();
-                    NativeArray<byte>.ReadOnly data;
-                    if (download is INativeDownload nativeDownload)
+                    var gltfBinary = download.IsBinary ?? UriHelper.IsGltfBinary(url);
+
+                    if (gltfBinary ?? false)
                     {
-                        data = nativeDownload.NativeData;
+                        m_VolatileDisposables ??= new List<IDisposable>();
+                        NativeArray<byte>.ReadOnly data;
+                        if (download is INativeDownload nativeDownload)
+                        {
+                            data = nativeDownload.NativeData;
+                        }
+                        else
+                        {
+                            var managedNativeArray = new ReadOnlyNativeArrayFromManagedArray<byte>(download.Data);
+                            m_VolatileDisposables.Add(managedNativeArray);
+                            data = managedNativeArray.Array.AsNativeArrayReadOnly();
+                        }
+
+                        m_VolatileDisposables.Add(download);
+                        success = await LoadGltfBinaryBuffer(data, url, cancellationToken);
                     }
                     else
                     {
-                        var managedNativeArray = new ReadOnlyNativeArrayFromManagedArray<byte>(download.Data);
-                        m_VolatileDisposables.Add(managedNativeArray);
-                        data = managedNativeArray.Array.AsNativeArrayReadOnly();
+                        var text = download.Text;
+                        download.Dispose();
+                        download = null;
+                        success = await LoadGltf(text, url, cancellationToken);
                     }
-                    m_VolatileDisposables.Add(download);
-                    success = await LoadGltfBinaryBuffer(data, url);
+
+                    success = success
+                        && await LoadContent(cancellationToken)
+                        && await Prepare(cancellationToken);
                 }
                 else
                 {
-                    var text = download.Text;
-                    download.Dispose();
-                    success = await LoadGltf(text, url);
+                    Logger?.Error(LogCode.Download, download.Error, url.ToString());
                 }
-                success = success
-                    && await LoadContent()
-                    && await Prepare();
             }
-            else
+            catch (OperationCanceledException e)
             {
-                Logger?.Error(LogCode.Download, download.Error, url.ToString());
+                Logger?.Info(LogCode.OperationCanceled, e.Message);
+                if (m_VolatileDisposables?.Contains(download) is false)
+                    download?.Dispose();
+                throw;
+            }
+            finally
+            {
+                await DisposeVolatileData();
             }
 
-            DisposeVolatileData();
             LoadingError = !success;
             LoadingDone = true;
             return success;
@@ -1296,21 +1353,36 @@ namespace GLTFast
             CancellationToken cancellationToken
             )
         {
-            m_Settings = importSettings ?? new ImportSettings();
-            var success = await LoadGltfBinaryBuffer(bytes, uri);
-            success = success
-                && await LoadContent()
-                && await Prepare();
-            DisposeVolatileData();
+            bool success;
+            try
+            {
+                m_Settings = importSettings ?? new ImportSettings();
+                success = await LoadGltfBinaryBuffer(bytes, uri, cancellationToken);
+                success = success
+                    && await LoadContent(cancellationToken)
+                    && await Prepare(cancellationToken);
+            }
+            catch (OperationCanceledException e)
+            {
+                Logger?.Info(LogCode.OperationCanceled, e.Message);
+                throw;
+            }
+            finally
+            {
+                await DisposeVolatileData();
+            }
+
             LoadingError = !success;
             LoadingDone = true;
             return success;
         }
 
-        async Task<bool> LoadContent()
+        async Task<bool> LoadContent(CancellationToken cancellationToken)
         {
 
-            var success = await WaitForBufferDownloads();
+            var success = await WaitForBufferDownloads(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
 
 #if MESHOPT_IS_ENABLED
             if (success) {
@@ -1322,14 +1394,14 @@ namespace GLTFast
             if (m_TextureDownloadTasks != null)
             {
                 if(success)
-                    await WaitForTextureDownloads();
+                    await WaitForTextureDownloads(cancellationToken);
                 m_TextureDownloadTasks.Clear();
             }
 #endif // UNITY_IMAGECONVERSION
 #if KTX_IS_ENABLED
             if (m_KtxDownloadTasks != null) {
                 if(success)
-                    await WaitForKtxDownloads();
+                    await WaitForKtxDownloads(cancellationToken);
                 m_KtxDownloadTasks.Clear();
             }
 #endif // KTX_IS_ENABLED
@@ -1344,15 +1416,24 @@ namespace GLTFast
         /// <returns>De-serialized glTF root object.</returns>
         protected abstract RootBase ParseJson(string json);
 
-        async Task<bool> ParseJsonAndLoadBuffers(string json, Uri baseUri)
+        async Task<bool> ParseJsonAndLoadBuffers(string json, Uri baseUri, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
             var predictedTime = json.Length / (float)k_JsonParseSpeed;
 #if GLTFAST_THREADS && !MEASURE_TIMINGS
             if (DeferAgent.ShouldDefer(predictedTime))
             {
                 // JSON is larger than threshold
                 // => parse in a thread
-                Root = await Task.Run(() => ParseJson(json));
+                try
+                {
+                    Root = await Task.Run(() => ParseJson(json), cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+                }
             }
             else
 #endif
@@ -1387,13 +1468,15 @@ namespace GLTFast
 
                 for (var i = 0; i < bufferCount; i++)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     var buffer = Root.Buffers[i];
                     if (!string.IsNullOrEmpty(buffer.uri))
                     {
                         if (buffer.uri.StartsWith("data:"))
                         {
                             Logger?.Warning(LogCode.EmbedSlow);
-                            if (!await LoadBufferFromDataUri(i, buffer))
+                            if (!await LoadBufferFromDataUri(i, buffer, cancellationToken))
                                 return false;
                         }
                         else
@@ -1407,8 +1490,10 @@ namespace GLTFast
             return true;
         }
 
-        async Task<bool> LoadBufferFromDataUri(int bufferIndex, Buffer buffer)
+        async Task<bool> LoadBufferFromDataUri(int bufferIndex, Buffer buffer, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
             if (!TryGetBufferDataUriDescriptor(
                     bufferIndex, buffer.byteLength, buffer.uri, out var startIndex, out var byteLength))
             {
@@ -1420,6 +1505,7 @@ namespace GLTFast
                 startIndex,
                 byteLength,
                 DeferAgent,
+                cancellationToken,
                 true // usually there's just one buffer and it's time-critical
             );
             if (!data.IsCreated)
@@ -1519,17 +1605,19 @@ namespace GLTFast
             return allExtensionsSupported;
         }
 
-        async Task<bool> LoadGltf(string json, Uri url)
+        async Task<bool> LoadGltf(string json, Uri url, CancellationToken cancellationToken)
         {
             var baseUri = UriHelper.GetBaseUri(url);
-            var success = await ParseJsonAndLoadBuffers(json, baseUri);
+            var success = await ParseJsonAndLoadBuffers(json, baseUri, cancellationToken);
             if (success)
-                await LoadImages(baseUri);
+                await LoadImages(baseUri, cancellationToken);
             return success;
         }
 
-        async Task LoadImages(Uri baseUri)
+        async Task LoadImages(Uri baseUri, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
             if (Root.Textures != null && Root.Images != null)
             {
                 Profiler.BeginSample("LoadImages.Prepare");
@@ -1615,12 +1703,14 @@ namespace GLTFast
 
                 for (int imageIndex = 0; imageIndex < Root.Images.Count; imageIndex++)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     var img = Root.Images[imageIndex];
 
                     if (!string.IsNullOrEmpty(img.uri) && img.uri.StartsWith("data:"))
                     {
                         Logger?.Warning(LogCode.EmbedSlow);
-                        var imageTask = LoadImageFromDataUri(imageIndex, img);
+                        var imageTask = LoadImageFromDataUri(imageIndex, img, cancellationToken);
                         imageTasks ??= new List<Task<bool>>();
                         imageTasks.Add(imageTask);
                     }
@@ -1676,9 +1766,11 @@ namespace GLTFast
         // TODO: If no suitable image loader is found, this method won't use the await operator, thus causing a warning.
         //       For now we'll ignore that warning. In the future, we'll encapsulate this in a better way.
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        async Task<bool> LoadImageFromDataUri(int imageIndex, Image img)
+        async Task<bool> LoadImageFromDataUri(int imageIndex, Image img, CancellationToken cancellationToken)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
             if (!DataUri.TryGetImageDataUriDescriptor(
                     img.uri, out var imageFormat, out var startIndex, out var byteLength))
             {
@@ -1696,7 +1788,7 @@ namespace GLTFast
                 case ImageFormat.PNG:
 #if UNITY_IMAGECONVERSION
                 {
-                    var texture = await LoadImageJpegOrPngFromDataUri(imageIndex, img, startIndex, byteLength);
+                    var texture = await LoadImageJpegOrPngFromDataUri(imageIndex, img, startIndex, byteLength, cancellationToken);
                     if (texture is not null)
                     {
                         m_Images[imageIndex] = texture;
@@ -1711,7 +1803,7 @@ namespace GLTFast
                 case ImageFormat.Ktx:
 #if KTX_IS_ENABLED
                 {
-                    var texture = await LoadImageKtxFromDataUri(imageIndex, img, startIndex, byteLength);
+                    var texture = await LoadImageKtxFromDataUri(imageIndex, img, startIndex, byteLength, cancellationToken);
                     if (texture is not null)
                     {
                         m_Images[imageIndex] = texture;
@@ -1728,10 +1820,16 @@ namespace GLTFast
         }
 
 #if UNITY_IMAGECONVERSION
-        async Task<Texture2D> LoadImageJpegOrPngFromDataUri(int imageIndex, Image img, int startIndex, int byteLength)
+        async Task<Texture2D> LoadImageJpegOrPngFromDataUri(
+            int imageIndex,
+            Image img,
+            int startIndex,
+            int byteLength,
+            CancellationToken cancellationToken
+            )
         {
 #if UNITY_6000_0_OR_NEWER
-            var data = await DataUri.DecodeDataUriAsync(img.uri, startIndex, byteLength, DeferAgent);
+            var data = await DataUri.DecodeDataUriAsync(img.uri, startIndex, byteLength, DeferAgent, cancellationToken);
             if (!data.IsCreated)
             {
                 Logger?.Error(LogCode.EmbedImageLoadFailed);
@@ -1739,7 +1837,7 @@ namespace GLTFast
             }
 #else
             var data = await DataUri.DecodeDataUriToManagedArrayAsync(
-                img.uri, startIndex, byteLength, DeferAgent);
+                img.uri, startIndex, byteLength, DeferAgent, cancellationToken);
             if (data == null)
             {
                 Logger?.Error(LogCode.EmbedImageLoadFailed);
@@ -1747,6 +1845,9 @@ namespace GLTFast
             }
 #endif
             await DeferAgent.BreakPoint();
+
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
             Profiler.BeginSample("LoadImageJpegOrPngFromDataUri");
             // TODO: Investigate alternative: native texture creation in worker thread
             var forceSampleLinear = m_ImageGamma != null && !m_ImageGamma[imageIndex];
@@ -1765,16 +1866,22 @@ namespace GLTFast
 #endif // UNITY_IMAGECONVERSION
 
 #if KTX_IS_ENABLED
-        async Task<Texture2D> LoadImageKtxFromDataUri(int imageIndex, Image img, int startIndex, int byteLength)
+        async Task<Texture2D> LoadImageKtxFromDataUri(
+            int imageIndex,
+            Image img,
+            int startIndex,
+            int byteLength,
+            CancellationToken cancellationToken
+            )
         {
-            var data = await DataUri.DecodeDataUriAsync(img.uri, startIndex, byteLength, DeferAgent);
+            var data = await DataUri.DecodeDataUriAsync(img.uri, startIndex, byteLength, DeferAgent, cancellationToken);
             if (!data.IsCreated)
             {
                 Logger?.Error(LogCode.EmbedImageLoadFailed);
                 return null;
             }
             await DeferAgent.BreakPoint();
-            var texture = await LoadImageKtx(imageIndex, img, data.AsReadOnly());
+            var texture = await LoadImageKtx(imageIndex, img, data.AsReadOnly(), cancellationToken);
             data.Dispose();
             return texture;
         }
@@ -1782,7 +1889,8 @@ namespace GLTFast
         async Task<Texture2D> LoadImageKtx(
             int imageIndex,
             Image img,
-            NativeArray<byte>.ReadOnly data)
+            NativeArray<byte>.ReadOnly data,
+            CancellationToken cancellationToken)
         {
             Profiler.BeginSample("LoadImageKtx");
 
@@ -1797,6 +1905,10 @@ namespace GLTFast
                 Logger?.Error(LogCode.EmbedImageLoadFailed);
                 return null;
             }
+
+            cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
+            // TODO implement cancellation in KTX package
             var result = await ktxTexture.LoadTexture2D(forceSampleLinear, readable);
             ktxTexture.Dispose();
             if (result.errorCode == ErrorCode.Success) {
@@ -1812,12 +1924,14 @@ namespace GLTFast
         }
 #endif
 
-        async Task<bool> WaitForBufferDownloads()
+        async Task<bool> WaitForBufferDownloads(CancellationToken cancellationToken)
         {
             if (m_DownloadTasks != null)
             {
                 foreach (var downloadPair in m_DownloadTasks)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     var download = await downloadPair.Value;
                     if (download.Success)
                     {
@@ -1870,12 +1984,14 @@ namespace GLTFast
         }
 
 #if UNITY_IMAGECONVERSION
-        async Task<bool> WaitForTextureDownloads()
+        async Task<bool> WaitForTextureDownloads(CancellationToken cancellationToken)
         {
             foreach (var dl in m_TextureDownloadTasks)
             {
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                 await dl.Value.Load();
-                var www = dl.Value.Download;
+                using var www = dl.Value.Download;
 
                 if (www == null)
                 {
@@ -1885,6 +2001,8 @@ namespace GLTFast
 
                 if (www.Success)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     var imageIndex = dl.Key;
                     Texture2D txt;
                     // TODO: Loading Jpeg/PNG textures like this creates major frame stalls. Main thread is waiting
@@ -1921,14 +2039,12 @@ namespace GLTFast
                         Profiler.EndSample();
                         txt.name = GetImageName(Root.Images[imageIndex], imageIndex);
                     }
-                    www.Dispose();
                     m_Images[imageIndex] = txt;
                     await DeferAgent.BreakPoint();
                 }
                 else
                 {
                     Logger?.Error(LogCode.TextureDownloadFailed, www.Error, dl.Key.ToString());
-                    www.Dispose();
                     return false;
                 }
             }
@@ -1937,11 +2053,12 @@ namespace GLTFast
 #endif // UNITY_IMAGECONVERSION
 
 #if KTX_IS_ENABLED
-        async Task<bool> WaitForKtxDownloads() {
+        async Task<bool> WaitForKtxDownloads(CancellationToken cancellationToken)
+        {
             var tasks = new Task<bool>[m_KtxDownloadTasks.Count];
             var i = 0;
             foreach( var dl in m_KtxDownloadTasks ) {
-                tasks[i] = ProcessKtxDownload(dl.Key, dl.Value);
+                tasks[i] = ProcessKtxDownload(dl.Key, dl.Value, cancellationToken);
                 i++;
             }
             await Task.WhenAll(tasks);
@@ -1951,9 +2068,11 @@ namespace GLTFast
             return true;
         }
 
-        async Task<bool> ProcessKtxDownload(int imageIndex, Task<IDownload> downloadTask) {
-            var www = await downloadTask;
-            if(www.Success) {
+        async Task<bool> ProcessKtxDownload(int imageIndex, Task<IDownload> downloadTask, CancellationToken cancellationToken)
+        {
+            using var www = await downloadTask;
+            if (www.Success)
+            {
                 NativeArray<byte>.ReadOnly data;
                 if (www is INativeDownload nativeDownload)
                 {
@@ -1969,7 +2088,7 @@ namespace GLTFast
                 var ktxContext = new KtxLoadContext(imageIndex,data);
                 var forceSampleLinear = m_ImageGamma!=null && !m_ImageGamma[imageIndex];
                 var readable = LoadImageReadable(imageIndex);
-                var result = await ktxContext.LoadTexture2D(forceSampleLinear, readable);
+                var result = await ktxContext.LoadTexture2D(forceSampleLinear, readable, cancellationToken);
                 if (result.errorCode == ErrorCode.Success) {
                     m_Images[imageIndex] = result.texture;
                     if (!result.orientation.IsYFlipped())
@@ -1977,13 +2096,11 @@ namespace GLTFast
                         m_NonFlippedYTextureIndices ??= new HashSet<int>();
                         m_NonFlippedYTextureIndices.Add(imageIndex);
                     }
-                    www.Dispose();
                     return true;
                 }
             } else {
                 Logger?.Error(LogCode.TextureDownloadFailed,www.Error,imageIndex.ToString());
             }
-            www.Dispose();
             return false;
         }
 #endif // KTX_IS_ENABLED
@@ -1995,7 +2112,7 @@ namespace GLTFast
             {
                 m_DownloadTasks = new Dictionary<int, Task<IDownload>>();
             }
-            m_DownloadTasks.Add(index, m_DownloadProvider.Request(url));
+            m_DownloadTasks.Add(index, m_Context.DownloadProvider.Request(url));
             Profiler.EndSample();
         }
 
@@ -2051,7 +2168,7 @@ namespace GLTFast
             if (isKtx)
             {
 #if KTX_IS_ENABLED
-                var downloadTask = m_DownloadProvider.Request(url);
+                var downloadTask = m_Context.DownloadProvider.Request(url);
                 if(m_KtxDownloadTasks==null) {
                     m_KtxDownloadTasks = new Dictionary<int, Task<IDownload>>();
                 }
@@ -2066,8 +2183,8 @@ namespace GLTFast
             {
 #if UNITY_IMAGECONVERSION
                 var downloadTask = LoadImageFromBytes(imageIndex)
-                    ? (TextureDownloadBase) new TextureDownload<IDownload>(m_DownloadProvider.Request(url))
-                    : new TextureDownload<ITextureDownload>(m_DownloadProvider.RequestTexture(url,nonReadable));
+                    ? (TextureDownloadBase) new TextureDownload<IDownload>(m_Context.DownloadProvider.Request(url))
+                    : new TextureDownload<ITextureDownload>(m_Context.DownloadProvider.RequestTexture(url,nonReadable));
                 if(m_TextureDownloadTasks==null) {
                     m_TextureDownloadTasks = new Dictionary<int, TextureDownloadBase>();
                 }
@@ -2104,7 +2221,7 @@ namespace GLTFast
 #endif
         }
 
-        async Task<bool> LoadGltfBinaryBuffer(NativeArray<byte>.ReadOnly bytes, Uri uri = null)
+        async Task<bool> LoadGltfBinaryBuffer(NativeArray<byte>.ReadOnly bytes, Uri uri, CancellationToken cancellationToken)
         {
             Profiler.BeginSample("LoadGltfBinary.Phase1");
 
@@ -2173,7 +2290,7 @@ namespace GLTFast
                     var json = await reader.ReadToEndAsync();
                     Profiler.EndSample();
 
-                    var success = await ParseJsonAndLoadBuffers(json, baseUri);
+                    var success = await ParseJsonAndLoadBuffers(json, baseUri, cancellationToken);
 
                     if (!success)
                     {
@@ -2201,7 +2318,7 @@ namespace GLTFast
                 var wrapper = new ReadOnlyNativeArrayFromNativeArray<byte>(bytes);
                 m_Buffers[0] = wrapper.Array;
             }
-            await LoadImages(baseUri);
+            await LoadImages(baseUri, cancellationToken);
             return true;
         }
 
@@ -2405,7 +2522,7 @@ namespace GLTFast
 
 #endif // MESHOPT_IS_ENABLED
 
-        async Task<bool> Prepare()
+        async Task<bool> Prepare(CancellationToken cancellationToken)
         {
             m_Resources = new List<UnityEngine.Object>();
 
@@ -2419,7 +2536,7 @@ namespace GLTFast
                 {
                     Assert.AreEqual(m_Images.Length, Root.Images.Count);
                 }
-                await CreateTexturesFromBuffers(Root.Images, Root.BufferViews);
+                await CreateTexturesFromBuffers(Root.Images, Root.BufferViews, cancellationToken);
             }
             await DeferAgent.BreakPoint();
 
@@ -2434,7 +2551,7 @@ namespace GLTFast
 
             if (Root.Accessors != null)
             {
-                success = await LoadAccessorData();
+                success = await LoadAccessorData(cancellationToken);
                 await DeferAgent.BreakPoint();
 
                 while (!m_AccessorJobsHandle.IsCompleted)
@@ -2447,36 +2564,36 @@ namespace GLTFast
 
 #if KTX_IS_ENABLED
             if(m_KtxLoadContextsBuffer!=null) {
-                await ProcessKtxLoadContexts();
+                await ProcessKtxLoadContexts(cancellationToken);
             }
 #endif // KTX_IS_ENABLED
 
 #if UNITY_IMAGECONVERSION && !UNITY_6000_0_OR_NEWER
             if (m_ImageCreateContexts != null)
             {
-                await WaitForImageCreateContexts();
+                await WaitForImageCreateContexts(cancellationToken);
             }
 #endif // UNITY_IMAGECONVERSION && !UNITY_6000_0_OR_NEWER
 
             if (m_Images != null && Root.Textures != null)
             {
-                PopulateTexturesAndImageVariants();
+                PopulateTexturesAndImageVariants(cancellationToken);
             }
 
             if (Root.Materials != null)
             {
-                await GenerateMaterials();
+                await GenerateMaterials(cancellationToken);
             }
             await DeferAgent.BreakPoint();
 
             if (m_MeshOrders != null)
             {
-                await WaitForAllMeshGenerators();
+                await WaitForAllMeshGenerators(cancellationToken);
                 await DeferAgent.BreakPoint();
 
-                await AssignAllAccessorData();
+                await AssignAllAccessorData(cancellationToken);
 
-                success = await CreateAllMeshAssignments();
+                success = await CreateAllMeshAssignments(cancellationToken);
             }
 
 #if UNITY_ANIMATION
@@ -2675,11 +2792,13 @@ namespace GLTFast
             }
         }
 
-        async Task<bool> CreateAllMeshAssignments()
+        async Task<bool> CreateAllMeshAssignments(CancellationToken cancellationToken)
         {
             foreach (var meshOrder in m_MeshOrders)
             {
-                var mesh = await meshOrder.generator.CreateMeshResult();
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
+                var mesh = await meshOrder.generator.CreateMeshResult(cancellationToken);
                 if (!ReferenceEquals(mesh, null))
                 {
                     foreach (var meshSubset in meshOrder.Recipients)
@@ -2706,26 +2825,31 @@ namespace GLTFast
             return true;
         }
 
-        async Task WaitForAllMeshGenerators()
+        async Task WaitForAllMeshGenerators(CancellationToken cancellationToken)
         {
             foreach (var meshOrder in m_MeshOrders)
             {
                 if (meshOrder.generator == null) continue;
                 while (!meshOrder.generator.IsCompleted)
                 {
+                    // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+                    // cancellationToken.ThrowIfCancellationRequestedWithTracking();
                     await Task.Yield();
                 }
             }
         }
 
-        async Task GenerateMaterials()
+        async Task GenerateMaterials(CancellationToken cancellationToken)
         {
             m_Materials = new UnityEngine.Material[Root.Materials.Count];
             for (var i = 0; i < m_Materials.Length; i++)
             {
+                // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+                // cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                 await DeferAgent.BreakPoint(.0001f);
                 Profiler.BeginSample("GenerateMaterial");
-                m_MaterialGenerator.SetLogger(Logger);
+                m_MaterialGenerator.SetLogger(m_Context.Logger);
                 var pointsSupport = GetMaterialPointsSupport(i);
                 var material = m_MaterialGenerator.GenerateMaterial(
                     Root.Materials[i],
@@ -2738,13 +2862,16 @@ namespace GLTFast
             }
         }
 
-        void PopulateTexturesAndImageVariants()
+        void PopulateTexturesAndImageVariants(CancellationToken cancellationToken)
         {
             var defaultKey = new SamplerKey(new Sampler());
             m_Textures = new Texture2D[Root.Textures.Count];
             var imageVariants = new Dictionary<SamplerKey, Texture2D>[m_Images.Length];
             for (var textureIndex = 0; textureIndex < Root.Textures.Count; textureIndex++)
             {
+                // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+                // cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                 var txt = Root.Textures[textureIndex];
                 SamplerKey key;
                 Sampler sampler = null;
@@ -2808,14 +2935,20 @@ namespace GLTFast
         }
 
 #if UNITY_IMAGECONVERSION && !UNITY_6000_0_OR_NEWER
-        async Task WaitForImageCreateContexts()
+        async Task WaitForImageCreateContexts(CancellationToken cancellationToken)
         {
             var imageCreateContextsLeft = true;
             while (imageCreateContextsLeft)
             {
+                // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+                // cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                 var loadedAny = false;
                 for (var i = m_ImageCreateContexts.Count - 1; i >= 0; i--)
                 {
+                    // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+                    // cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     var jh = m_ImageCreateContexts[i];
                     if (jh.jobHandle.IsCompleted)
                     {
@@ -2956,7 +3089,7 @@ namespace GLTFast
         /// <summary>
         /// Free up volatile loading resources
         /// </summary>
-        void DisposeVolatileData()
+        async Task DisposeVolatileData()
         {
             m_Buffers = null;
             m_BinChunks = null;
@@ -2965,7 +3098,7 @@ namespace GLTFast
             {
                 foreach (var disposable in m_VolatileDisposables)
                 {
-                    disposable.Dispose();
+                    disposable?.Dispose();
                 }
                 m_VolatileDisposables = null;
             }
@@ -2974,7 +3107,11 @@ namespace GLTFast
             {
                 foreach (var download in m_DownloadTasks.Values)
                 {
-                    download?.Dispose();
+                    if (download is not null)
+                    {
+                        await download;
+                        download.Dispose();
+                    }
                 }
                 m_DownloadTasks = null;
             }
@@ -3010,7 +3147,7 @@ namespace GLTFast
 #endif
         }
 
-        async Task InstantiateSceneInternal(IInstantiator instantiator, int sceneId)
+        async Task InstantiateSceneInternal(IInstantiator instantiator, int sceneId, CancellationToken cancellationToken)
         {
             if (m_ImportInstances != null)
             {
@@ -3029,6 +3166,7 @@ namespace GLTFast
                 {
                     foreach (var child in node.children)
                     {
+                        cancellationToken.ThrowIfCancellationRequestedWithTracking();
                         await IterateNodes(child, nodeIndex, callback);
                     }
                 }
@@ -3072,6 +3210,8 @@ namespace GLTFast
                     var meshNumeration = 0;
                     foreach (var meshAssignment in m_MeshAssignments.Values(node.mesh))
                     {
+                        cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                         var mesh = meshAssignment.mesh;
                         var meshName = string.IsNullOrEmpty(mesh.name) ? null : mesh.name;
                         uint[] joints = null;
@@ -3199,10 +3339,12 @@ namespace GLTFast
             {
                 foreach (var nodeId in scene.nodes)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
                     await IterateNodes(nodeId, null, CreateHierarchy);
                 }
                 foreach (var nodeId in scene.nodes)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
                     await IterateNodes(nodeId, null, PopulateHierarchy);
                 }
             }
@@ -3320,7 +3462,8 @@ namespace GLTFast
 
         async Task CreateTexturesFromBuffers(
             IReadOnlyList<Image> srcImages,
-            IReadOnlyList<BufferViewBase> bufferViews
+            IReadOnlyList<BufferViewBase> bufferViews,
+            CancellationToken cancellationToken
         )
         {
 #if UNITY_IMAGECONVERSION && !UNITY_6000_0_OR_NEWER
@@ -3328,6 +3471,8 @@ namespace GLTFast
 #endif
             for (int i = 0; i < m_Images.Length; i++)
             {
+                cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                 Profiler.BeginSample("CreateTexturesFromBuffers.ImageFormat");
                 if (m_Images[i] != null)
                 {
@@ -3484,8 +3629,10 @@ namespace GLTFast
         /// sub-meshes. Parameters are MeshResult index, mesh index and per sub-mesh primitive index</summary>
         public event Action<int, int, int[]> MeshResultAssigned;
 
-        async Task<bool> LoadAccessorData()
+        async Task<bool> LoadAccessorData(CancellationToken cancellationToken)
         {
+            // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+
             Profiler.BeginSample("LoadAccessorData.Init");
 
 #if DEBUG
@@ -3649,15 +3796,11 @@ namespace GLTFast
 
             var success = true;
 
-            if (!success)
-            {
-                return false;
-            }
-
 #if UNITY_ANIMATION
-            if (Root.HasAnimation) {
-                for (int i = 0; i < Root.Animations.Count; i++) {
-                    var animation = Root.Animations[i];
+            if (Root.HasAnimation)
+            {
+                foreach (var animation in Root.Animations)
+                {
                     foreach (var sampler in animation.Samplers) {
                         SetAccessorUsage(sampler.input,AccessorUsage.AnimationTimes);
                     }
@@ -3857,12 +4000,14 @@ namespace GLTFast
             m_AccessorUsage[index] = newUsage;
         }
 
-        async Task AssignAllAccessorData()
+        async Task AssignAllAccessorData(CancellationToken cancellationToken)
         {
             if (Root.Skins != null)
             {
                 for (int s = 0; s < Root.Skins.Count; s++)
                 {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+
                     Profiler.BeginSample("AssignAllAccessorData.Skin");
                     var skin = Root.Skins[s];
                     if (skin.inverseBindMatrices >= 0)
@@ -4231,28 +4376,34 @@ namespace GLTFast
             int index,
             KtxLoadContextBase ktx,
             bool linear,
-            bool readable
+            bool readable,
+            CancellationToken cancellationToken
             )
         {
             return new KtxTranscodeTaskWrapper {
                 index = index,
-                result = await ktx.LoadTexture2D(linear, readable)
+                result = await ktx.LoadTexture2D(linear, readable, cancellationToken)
             };
         }
 
-        async Task ProcessKtxLoadContexts() {
+        async Task ProcessKtxLoadContexts(CancellationToken cancellationToken)
+        {
+            // TODO fix resource disposal when calling DisposeVolatileData() while jobs are queued/running
+
             var maxCount = SystemInfo.processorCount+1;
 
             var totalCount = m_KtxLoadContextsBuffer.Count;
             var startedCount = 0;
             var ktxTasks = new List<Task<KtxTranscodeTaskWrapper>>(maxCount);
 
-            while (startedCount < totalCount || ktxTasks.Count>0) {
-                while (ktxTasks.Count < maxCount && startedCount < totalCount) {
+            while (startedCount < totalCount || ktxTasks.Count > 0)
+            {
+                while (ktxTasks.Count < maxCount && startedCount < totalCount)
+                {
                     var ktx = m_KtxLoadContextsBuffer[startedCount];
                     var forceSampleLinear = m_ImageGamma != null && !m_ImageGamma[ktx.imageIndex];
                     var readable = LoadImageReadable(ktx.imageIndex);
-                    ktxTasks.Add(KtxLoadAndTranscode(startedCount, ktx, forceSampleLinear, readable));
+                    ktxTasks.Add(KtxLoadAndTranscode(startedCount, ktx, forceSampleLinear, readable, cancellationToken));
                     startedCount++;
                     await DeferAgent.BreakPoint();
                 }

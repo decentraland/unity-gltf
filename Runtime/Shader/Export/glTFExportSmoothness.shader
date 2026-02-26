@@ -3,6 +3,7 @@ Shader "Hidden/glTFExportSmoothness"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _SmoothnessFactor ("Smoothness Factor", Range(0,1)) = 1
     }
     SubShader
     {
@@ -38,12 +39,13 @@ Shader "Hidden/glTFExportSmoothness"
                 return o;
             }
 
+            float _SmoothnessFactor;
             sampler2D _MainTex;
 
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_MainTex, i.uv);
-                float4 result = float4(1,1-col.a,1,1);
+                float4 result = float4(1,1-col.a*_SmoothnessFactor,1,1);
                 return result;
             }
             ENDCG

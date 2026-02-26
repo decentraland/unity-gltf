@@ -29,10 +29,19 @@ namespace GLTFast.Export
                 switch (renderPipeline)
                 {
                     case RenderPipeline.BuiltIn:
+#if UNITY_SHADER_GRAPH && GLTFAST_BUILTIN_SHADER_GRAPH
+                        s_MaterialExport = MetaMaterialExportShaderGraphs<
+                            StandardMaterialExport,
+                            GltfShaderGraphMaterialExporter
+                        >.Instance;
+#else
+                        s_MaterialExport = MetaMaterialExportBuiltIn.Instance;
+#endif
+                        break;
                     case RenderPipeline.Universal:
 #if UNITY_SHADER_GRAPH
                         s_MaterialExport = MetaMaterialExportShaderGraphs<
-                            StandardMaterialExport,
+                            LitMaterialExport,
                             GltfShaderGraphMaterialExporter
                         >.Instance;
 #else

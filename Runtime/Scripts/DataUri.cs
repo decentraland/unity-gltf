@@ -6,6 +6,7 @@
 #endif
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEngine;
@@ -32,6 +33,7 @@ namespace GLTFast
             int startIndex,
             int byteLength,
             IDeferAgent deferAgent,
+            CancellationToken cancellationToken,
             bool timeCritical = false
             )
         {
@@ -42,7 +44,14 @@ namespace GLTFast
 #elif GLTFAST_THREADS
             if (!timeCritical || deferAgent.ShouldDefer(predictedTime))
             {
-                return await Task.Run(() => DecodeDataUri(dataUri, startIndex, byteLength));
+                try
+                {
+                    return await Task.Run(() => DecodeDataUri(dataUri, startIndex, byteLength), cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+                }
             }
 #endif
             await deferAgent.BreakPoint(predictedTime);
@@ -66,6 +75,7 @@ namespace GLTFast
             int startIndex,
             int byteLength,
             IDeferAgent deferAgent,
+            CancellationToken cancellationToken,
             bool timeCritical = false
             )
         {
@@ -73,7 +83,14 @@ namespace GLTFast
 #if GLTFAST_THREADS
             if (!timeCritical || deferAgent.ShouldDefer(predictedTime))
             {
-                return await Task.Run(() => DecodeDataUriToManagedArray(dataUri, startIndex, byteLength));
+                try
+                {
+                    return await Task.Run(() => DecodeDataUriToManagedArray(dataUri, startIndex, byteLength), cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    cancellationToken.ThrowIfCancellationRequestedWithTracking();
+                }
             }
 #endif
             await deferAgent.BreakPoint(predictedTime);

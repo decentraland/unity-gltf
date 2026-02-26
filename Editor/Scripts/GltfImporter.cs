@@ -327,8 +327,8 @@ namespace GLTFast.Editor
             {
                 throw new InvalidOperationException("Instantiating scene failed");
             }
-            var useFirstChild = true;
-            var multipleNodes = scene.nodes.Length > 1;
+            var useFirstChild = scene.nodes is { Length: > 0 };
+            var singleNode = scene.nodes is { Length: 1 };
             var hasAnimation = false;
 #if UNITY_ANIMATION
             if (importSettings.AnimationMethod != AnimationMethod.None
@@ -341,7 +341,7 @@ namespace GLTFast.Editor
 #endif
 
             if (instantiationSettings.SceneObjectCreation == SceneObjectCreation.Never
-                || instantiationSettings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && !multipleNodes)
+                || instantiationSettings.SceneObjectCreation == SceneObjectCreation.WhenMultipleRootNodes && singleNode)
             {
                 // No scene GameObject was created, so the first
                 // child is the first (and in this case only) node.

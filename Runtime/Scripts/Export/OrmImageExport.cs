@@ -17,6 +17,7 @@ namespace GLTFast.Export
     /// </summary>
     class OrmImageExport : ImageExport
     {
+        static readonly int smoothnessFactorProperty = Shader.PropertyToID("_SmoothnessFactor");
 
         static Material s_MetalGlossBlitMaterial;
         static Material s_OcclusionBlitMaterial;
@@ -25,22 +26,27 @@ namespace GLTFast.Export
         readonly Texture2D m_OccTexture;
         readonly Texture2D m_SmoothnessTexture;
 
+        readonly float m_SmoothnessFactor;
+
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="metalGlossTexture">Metal/Gloss texture, as used by Unity Lit/Standard materials</param>
         /// <param name="occlusionTexture">Occlusion texture, as used by Unity Lit/Standard materials</param>
         /// <param name="smoothnessTexture">Smoothness texture, as used by Unity Lit/Standard materials</param>
+        /// <param name="smoothnessFactor">Smoothness factor</param>
         /// <param name="imageFormat">Export image format</param>
         public OrmImageExport(
             Texture2D metalGlossTexture = null,
             Texture2D occlusionTexture = null,
             Texture2D smoothnessTexture = null,
+            float smoothnessFactor = 1.0f,
             ImageFormat imageFormat = ImageFormat.Unknown)
             : base(metalGlossTexture, imageFormat)
         {
             m_OccTexture = occlusionTexture;
             m_SmoothnessTexture = smoothnessTexture;
+            m_SmoothnessFactor = smoothnessFactor;
         }
 
         /// <inheritdoc />
@@ -176,7 +182,8 @@ namespace GLTFast.Export
         {
             if (m_Texture != null || m_OccTexture != null || m_SmoothnessTexture != null)
             {
-                imageData = EncodeOrmTexture(m_Texture, m_OccTexture, m_SmoothnessTexture, ImageFormat, JpgQuality);
+                imageData = EncodeOrmTexture(
+                    m_Texture, m_OccTexture, m_SmoothnessTexture, m_SmoothnessFactor, ImageFormat, JpgQuality);
                 return true;
             }
             imageData = null;
@@ -189,6 +196,7 @@ namespace GLTFast.Export
         /// <param name="metalGlossTexture">Metal/Gloss texture</param>
         /// <param name="occlusionTexture">Occlusion texture</param>
         /// <param name="smoothnessTexture">Smoothness texture</param>
+        /// <param name="smoothnessFactor">Smoothenss factor</param>
         /// <param name="format">Export image format</param>
         /// <param name="jpgQuality">[1-100] quality for JPG images</param>
         /// <returns></returns>
@@ -196,6 +204,7 @@ namespace GLTFast.Export
             Texture2D metalGlossTexture,
             Texture2D occlusionTexture,
             Texture2D smoothnessTexture,
+            float smoothnessFactor,
             ImageFormat format,
             int jpgQuality
         )
@@ -239,6 +248,7 @@ namespace GLTFast.Export
                 RenderTexture.active = rt;
             }
             else {
+                blitMaterial.SetFloat(smoothnessFactorProperty, smoothnessFactor);
                 Graphics.Blit(metalGlossTexture, destRenderTexture, blitMaterial);
             }
             if (occlusionTexture != null) {
@@ -247,6 +257,7 @@ namespace GLTFast.Export
             }
             if (smoothnessTexture != null) {
                 blitMaterial = GetGlossBlitMaterial();
+                blitMaterial.SetFloat(smoothnessFactorProperty, smoothnessFactor);
                 Graphics.Blit(smoothnessTexture, destRenderTexture, blitMaterial);
             }
 

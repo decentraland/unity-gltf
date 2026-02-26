@@ -154,9 +154,6 @@ half Alpha(float2 uv)
     return baseColorFactor.a;
 #else
     half alpha = tex2D(baseColorTexture, uv).a;
-#ifndef UNITY_COLORSPACE_GAMMA
-    alpha = GammaToLinearSpace(alpha);
-#endif
     return alpha * baseColorFactor.a;
 #endif
 }
@@ -235,20 +232,17 @@ half3 Emission(float2 uv)
 }
 
 #ifdef _NORMALMAP
+
 half3 NormalInTangentSpace(float2 texcoords)
 {
-    // This is a replacement for UnityStandardUtils UnpackScaleNormal to use XYZ normals even with DXT5nm enabled
+    // This is a replacement for UnityStandardUtils UnpackScaleNormalRGorAG to use XYZ normals even with DXT5nm enabled
     half4 packedNormal = tex2D(normalTexture, texcoords);
-    packedNormal.x *= packedNormal.w;
-
-    half3 normal;
-    normal.xy = packedNormal.xy * 2 - 1;
+    half3 normal = packedNormal.xyz * 2 - 1;
 #if (SHADER_TARGET >= 30)
     // SM2.0: instruction count limitation
     // SM2.0: normal scaler is not supported
     normal.xy *= normalTexture_scale;
 #endif
-    normal.z = sqrt(1.0 - saturate(dot(normal.xy, normal.xy)));
     return normal;
 }
 #endif

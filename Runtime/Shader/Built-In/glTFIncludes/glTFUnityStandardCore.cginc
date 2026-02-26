@@ -288,12 +288,12 @@ inline FragmentCommonData FragmentSetup (
     half3 i_viewDirForParallax,
     float4 tangentToWorld[3],
     float3 i_posWorld,
-    half3 v_color
+    half4 v_color
     )
 {
     i_tex = Parallax(i_tex, i_viewDirForParallax);
 
-    half alpha = Alpha(i_tex.xy);
+    half alpha = Alpha(i_tex.xy) * v_color.a;
     #if defined(_ALPHATEST_ON)
         clip (alpha - alphaCutoff);
     #endif

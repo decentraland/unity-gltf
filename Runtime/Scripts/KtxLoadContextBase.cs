@@ -7,6 +7,7 @@
 
 #if KTX_IS_ENABLED
 
+using System.Threading;
 using System.Threading.Tasks;
 using KtxUnity;
 using Unity.Collections;
@@ -24,7 +25,7 @@ namespace GLTFast {
             m_Data = data;
         }
 
-        public abstract Task<TextureResult> LoadTexture2D(bool linear, bool readable);
+        public abstract Task<TextureResult> LoadTexture2D(bool linear, bool readable, CancellationToken cancellationToken);
     }
 }
 #endif // KTX_IS_INSTALLED

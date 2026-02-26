@@ -171,7 +171,7 @@ namespace GLTFast.Loading
         {
             if (disposing)
             {
-                m_Request.Dispose();
+                m_Request?.Dispose();
                 m_Request = null;
             }
         }
