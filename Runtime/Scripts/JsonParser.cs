@@ -211,9 +211,15 @@ namespace GLTFast
                         {
                             e.KHR_lights_punctual = null;
                         }
+                        // Check if spring bone joint extension is valid
+                        if ((e.DCL_spring_bone_joint?.version ?? -1) < 0)
+                        {
+                            e.DCL_spring_bone_joint = null;
+                        }
                         // Unset `extension` if none of them was valid
                         if (e.EXT_mesh_gpu_instancing == null &&
-                            e.KHR_lights_punctual == null)
+                            e.KHR_lights_punctual == null &&
+                            e.DCL_spring_bone_joint == null)
                         {
                             root.nodes[i].extensions = null;
                         }
