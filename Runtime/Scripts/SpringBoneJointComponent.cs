@@ -7,11 +7,11 @@ namespace GLTFast
     /// </summary>
     public class SpringBoneJointComponent : MonoBehaviour
     {
-        public float Stiffness { get; set; }
-        public float Drag { get; set; }
-        public Vector3 GravityDir { get; set; }
-        public float GravityPower { get; set; }
-        public float HitRadius { get; set; }
-        public bool IsRoot { get; set; }
+        [field: SerializeField] public float Stiffness { get; set; }
+        [field: SerializeField] public float Drag { get; set; }
+        [field: SerializeField] public Vector3 GravityDir { get; set; }
+        [field: SerializeField] public float GravityPower { get; set; }
+        [field: SerializeField] public float HitRadius { get; set; }
+        [field: SerializeField] public bool IsRoot { get; set; }
     }
 }
