@@ -177,6 +177,7 @@ namespace GLTFast
             ExtensionName.MeshGPUInstancing,
             ExtensionName.LightsPunctual,
             ExtensionName.MaterialsClearcoat,
+            ExtensionName.SpringBoneJoint,
         };
 
         static IDeferAgent s_DefaultDeferAgent;
