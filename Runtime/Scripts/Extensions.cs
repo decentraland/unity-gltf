@@ -57,6 +57,10 @@ namespace GLTFast
         /// <see href="https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md">KHR_texture_transform</see> glTF extension
         /// </summary>
         TextureTransform,
+        /// <summary>
+        /// DCL_spring_bone_joint glTF extension for spring bone simulation
+        /// </summary>
+        SpringBoneJoint,
     }
 
     /// <summary>
@@ -104,6 +108,10 @@ namespace GLTFast
         /// <see href="https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_lights_punctual">KHR_lights_punctual</see> glTF extension
         /// </summary>
         public const string LightsPunctual = "KHR_lights_punctual";
+        /// <summary>
+        /// DCL_spring_bone_joint glTF extension
+        /// </summary>
+        public const string SpringBoneJoint = "DCL_spring_bone_joint";
 
         /// <summary>
         /// Returns the official name of the glTF extension
@@ -132,6 +140,8 @@ namespace GLTFast
                     return TextureBasisUniversal;
                 case Extension.TextureTransform:
                     return TextureTransform;
+                case Extension.SpringBoneJoint:
+                    return SpringBoneJoint;
                 default:
                     return null;
             }
