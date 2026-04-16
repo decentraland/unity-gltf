@@ -9,8 +9,6 @@ You can load a glTF&trade; asset from an URL or a file path.
 
 Add a [GltfAsset] component to a GameObject. It offers a lot of settings for import and instantiation.
 
-![GltfAsset component][gltfasset_component]
-
 ## Runtime Loading via Script
 
 Conveniently you can re-use the [GltfAsset] component to load from script:
@@ -206,7 +204,6 @@ When you no longer need a loaded instance of a glTF scene you might want to remo
 [GltfImportLoadGltfJson]: xref:GLTFast.GltfImportBase.LoadGltfJson*
 [GltfImportLoadStream]: xref:GLTFast.GltfImportBase.LoadStream*
 [GameObjectInstantiator]: xref:GLTFast.GameObjectInstantiator
-[gltfasset_component]: Images/gltfasset_component.png  "Inspector showing a GltfAsset component added to a GameObject"
 [ICodeLogger]: xref:GLTFast.Logging.ICodeLogger
 [IDownload]: xref:GLTFast.Loading.IDownload
 [IInstantiator]: xref:GLTFast.IInstantiator

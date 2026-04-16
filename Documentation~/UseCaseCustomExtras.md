@@ -92,7 +92,6 @@ To set up a new scene, follow these steps:
 Select **Play**, the glTF asset should be loaded and displayed at runtime.
 
 You can verify that the custom data in the `extras` property of the glTF is imported correctly by inspecting the loaded glTF asset:
-![Screen capture that displays the extra data in the imported glTF asset](Images/gltf-extra-data.png)
 
 ## Trademarks
 

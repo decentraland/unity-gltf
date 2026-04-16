@@ -88,8 +88,6 @@ namespace GLTFast.Editor
                 logger
                 );
 
-            var gltfIcon = AssetDatabase.LoadAssetAtPath<Texture2D>($"Packages/{GltfGlobals.GltfPackageName}/Editor/UI/gltf-icon-bug.png");
-
             if (editorImportSettings == null)
             {
                 // Design-time import specific settings

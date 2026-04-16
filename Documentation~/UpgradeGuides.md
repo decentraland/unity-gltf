@@ -211,8 +211,6 @@ New shader graphs are used with certain Universal and High Definition render pip
 
 When upgrading from an older version to 4.x or newer the most notable difference is the imported models' orientation. They will appear 180° rotated around the up-axis (Y).
 
-![GltfAsset component][gltfast3to4]
-
 To counter-act this in applications that used older versions of *Unity glTFast* before, make sure you rotate the parent `Transform` by 180° around the Y-axis, which brings the model back to where it should be.
 
 This change was implemented to conform more closely to the [glTF specification][gltf-spec-coords], which says:
@@ -281,7 +279,6 @@ In the future materials can be created before textures are available/downloaded 
 [GitPackageInstall]: https://docs.unity3d.com/Manual/upm-ui-giturl.html
 [gltf-spec-coords]: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units
 [GltfAsset]: xref:GLTFast.GltfAsset
-[gltfast3to4]: Images/gltfast3to4.png  "3D scene view showing BoomBoxWithAxes model twice. One with the legacy axis conversion and one with the new orientation"
 [GltfImport]: xref:GLTFast.GltfImport
 [Monorepo]: https://en.wikipedia.org/wiki/Monorepo
 [ProjectManifest]: https://docs.unity3d.com/Manual/upm-git.html
