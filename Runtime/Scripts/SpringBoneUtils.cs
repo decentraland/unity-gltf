@@ -14,42 +14,13 @@ namespace GLTFast
         /// </summary>
         public static void ApplySpringBoneJoints(IGltfReadable gltf, Dictionary<uint, GameObject> nodes)
         {
-            var sourceNodes = gltf.GetSourceRoot()?.nodes;
-            if (sourceNodes == null) return;
-
-            for (uint i = 0; i < sourceNodes.Length; i++)
+            foreach (var kvp in nodes)
             {
-                var springBone = sourceNodes[i].extensions?.DCL_spring_bone_joint;
+                var node = gltf.GetSourceNode((int)kvp.Key);
+                var springBone = node?.Extensions?.DCL_spring_bone_joint;
                 if (springBone == null) continue;
 
-                if (!nodes.TryGetValue(i, out var go)) continue;
-
-                ApplySpringBone(go, springBone);
-            }
-        }
-
-        /// <summary>
-        /// Applies spring bone joint components by matching node names in the scene hierarchy.
-        /// </summary>
-        public static void ApplySpringBoneJoints(IGltfReadable gltf, GameObject sceneRoot)
-        {
-            var sourceNodes = gltf.GetSourceRoot()?.nodes;
-            if (sourceNodes == null) return;
-
-            var transforms = sceneRoot.GetComponentsInChildren<Transform>(true);
-            var nameToTransform = new Dictionary<string, Transform>();
-            foreach (var t in transforms)
-                nameToTransform.TryAdd(t.name, t);
-
-            for (int i = 0; i < sourceNodes.Length; i++)
-            {
-                var springBone = sourceNodes[i].extensions?.DCL_spring_bone_joint;
-                if (springBone == null) continue;
-
-                var nodeName = sourceNodes[i].name ?? $"Node-{i}";
-                if (!nameToTransform.TryGetValue(nodeName, out var transform)) continue;
-
-                ApplySpringBone(transform.gameObject, springBone);
+                ApplySpringBone(kvp.Value, springBone);
             }
         }
 
