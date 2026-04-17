@@ -1470,7 +1470,7 @@ namespace GLTFast
 
             if (Root == null)
             {
-                m_Logger?.Error(LogCode.JsonParsingFailed);
+                Logger?.Error(LogCode.JsonParsingFailed);
                 return false;
             }
 
