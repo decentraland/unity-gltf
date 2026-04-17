@@ -48,6 +48,9 @@ using Unity.Mathematics;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using Buffer = GLTFast.Schema.Buffer;
 using Debug = UnityEngine.Debug;
 using Sampler = GLTFast.Schema.Sampler;
