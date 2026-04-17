@@ -1,8 +1,8 @@
 {
   "name": "com.atteneder.gltfast",
   "version": "6.18.0",
-  "displayName": "glTFast",
-  "description": "Use glTFast to import and export glTF 3D files efficiently at runtime or in the Editor",
+  "displayName": "DCL - glTFast",
+  "description": "Decentraland's override of the original glTFast implementation to support some small features that we need",
   "unity": "2022.3",
   "keywords": [
     "mesh",
