@@ -982,7 +982,12 @@ namespace GLTFast
         /// <inheritdoc cref="IGltfReadable.IsTextureYFlipped"/>
         public bool IsTextureYFlipped(int index = 0)
         {
-            return m_NonFlippedYTextureIndices == null || !m_NonFlippedYTextureIndices.Contains(index);
+#if KTX
+     return (m_NonFlippedYTextureIndices == null || !m_NonFlippedYTextureIndices.Contains(index))
+            && GetSourceTexture(index)?.IsKtx == true;
+ #else
+     return false;
+ #endif
         }
 
 #if UNITY_ANIMATION
