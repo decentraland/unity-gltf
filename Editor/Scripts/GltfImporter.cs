@@ -22,7 +22,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using GLTFast.Loading;
 using GLTFast.Logging;
+using GLTFast.Materials;
 using GLTFast.Utils;
 using UnityEditor;
 using UnityEditor.AssetImporters;
@@ -66,7 +68,7 @@ namespace GLTFast.Editor
 
         // static fields ensure that they dont get deleted after saving the importer
         private static IMaterialGenerator customMaterialGenerator;
-        private static IEditorDownloadProvider customDownloadProvider;
+        private static IDownloadProvider customDownloadProvider;
         
         // static string[] GatherDependenciesFromSourceFile(string path) {
         //     // Called before actual import for each changed asset that is imported by this importer type
@@ -82,7 +84,7 @@ namespace GLTFast.Editor
             customMaterialGenerator = materialGenerator;
         }
 
-        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider)
+        public void SetupCustomGltfDownloadProvider(IDownloadProvider downloadProvider)
         {
             customDownloadProvider = downloadProvider;
         }
