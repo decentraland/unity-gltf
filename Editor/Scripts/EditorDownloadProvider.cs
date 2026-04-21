@@ -46,7 +46,7 @@ namespace GLTFast.Editor
 #pragma warning restore 1998
     }
 
-    class SyncFileLoader : IDownload, INativeDownload
+    public class SyncFileLoader : IDownload, INativeDownload
     {
         ReadOnlyNativeArrayFromManagedArray<byte> m_ManagedNativeArray;
 
