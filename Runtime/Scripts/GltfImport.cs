@@ -2450,17 +2450,14 @@ namespace GLTFast
         void CreateAnimationClips(int[] parentIndex)
         {
             m_AnimationClips = new AnimationClip[Root.Animations.Count];
-            var finalLegacy = m_Settings.AnimationMethod == AnimationMethod.Legacy;
             for (var i = 0; i < Root.Animations.Count; i++) {
                 var animation = Root.Animations[i];
                 m_AnimationClips[i] = new AnimationClip
                 {
                     name = animation.name ?? $"Clip_{i}",
 
-                    // SetCurve is rejected at runtime unless the clip is legacy. Populate as legacy,
-                    // then flip back after all curves are written so the Mecanim path still sees a
-                    // non-legacy clip downstream.
-                    legacy = true,
+                    // Legacy Animation requirement
+                    legacy = m_Settings.AnimationMethod == AnimationMethod.Legacy,
                     wrapMode = WrapMode.Loop
                 };
 
@@ -2551,8 +2548,6 @@ namespace GLTFast
                             break;
                     }
                 }
-
-                m_AnimationClips[i].legacy = finalLegacy;
             }
         }
 
