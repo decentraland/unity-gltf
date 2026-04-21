@@ -68,7 +68,7 @@ namespace GLTFast.Editor
 
         // static fields ensure that they dont get deleted after saving the importer
         private static IMaterialGenerator customMaterialGenerator;
-        private static IDownloadProvider customDownloadProvider;
+        private static IEditorDownloadProvider customDownloadProvider;
         
         // static string[] GatherDependenciesFromSourceFile(string path) {
         //     // Called before actual import for each changed asset that is imported by this importer type
