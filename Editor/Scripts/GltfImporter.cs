@@ -79,15 +79,11 @@ namespace GLTFast.Editor
         //     return null;
         // }
 
-        public void SetupCustomMaterialGenerator(IMaterialGenerator materialGenerator)
-        {
+        public void SetupCustomMaterialGenerator(IMaterialGenerator materialGenerator) =>
             customMaterialGenerator = materialGenerator;
-        }
 
-        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider)
-        {
+        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider) =>
             customDownloadProvider = downloadProvider;
-        }
         
         public override void OnImportAsset(AssetImportContext ctx)
         {
