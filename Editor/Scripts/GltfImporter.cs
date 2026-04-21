@@ -84,7 +84,7 @@ namespace GLTFast.Editor
             customMaterialGenerator = materialGenerator;
         }
 
-        public void SetupCustomGltfDownloadProvider(IDownloadProvider downloadProvider)
+        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider)
         {
             customDownloadProvider = downloadProvider;
         }
