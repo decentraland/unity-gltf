@@ -59,7 +59,7 @@ namespace GLTFast.Editor
         internal LogItem[] reportItems;
         // ReSharper restore NotAccessedField.Local
 
-        GltfImport m_Gltf;
+        protected GltfImport m_Gltf;
 
         HashSet<string> m_ImportedNames;
         HashSet<Object> m_ImportedObjects;
