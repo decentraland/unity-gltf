@@ -109,7 +109,7 @@ namespace GLTFast.Editor
         }
     }
 
-    sealed class SyncTextureLoader : SyncFileLoader, ITextureDownload
+    sealed public class SyncTextureLoader : SyncFileLoader, ITextureDownload
     {
 
         public Texture2D Texture { get; private set; }
