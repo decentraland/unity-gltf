@@ -14,10 +14,11 @@ namespace GLTFast.Editor
 
     using Loading;
 
-    class EditorDownloadProvider : IDownloadProvider
+    class EditorDownloadProvider : IEditorDownloadProvider
     {
 
-        public List<GltfAssetDependency> assetDependencies = new List<GltfAssetDependency>();
+        public List<GltfAssetDependency> assetDependencies { get; set; } 
+            = new List<GltfAssetDependency>();
 
 #pragma warning disable 1998
         public async Task<IDownload> Request(Uri url)
