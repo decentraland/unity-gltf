@@ -24,6 +24,31 @@ namespace GLTFast
             }
         }
 
+        /// <summary>
+        /// Applies spring bone joint components by matching node names in the scene hierarchy.
+        /// </summary>
+        public static void ApplySpringBoneJoints(IGltfReadable gltf, GameObject sceneRoot)
+        {
+            var sourceNodes = gltf.GetSourceRoot()?.nodes;
+            if (sourceNodes == null) return;
+
+            var transforms = sceneRoot.GetComponentsInChildren<Transform>(true);
+            var nameToTransform = new Dictionary<string, Transform>();
+            foreach (var t in transforms)
+                nameToTransform.TryAdd(t.name, t);
+
+            for (int i = 0; i < sourceNodes.Length; i++)
+            {
+                var springBone = sourceNodes[i].extensions?.DCL_spring_bone_joint;
+                if (springBone == null) continue;
+
+                var nodeName = sourceNodes[i].name ?? $"Node-{i}";
+                if (!nameToTransform.TryGetValue(nodeName, out var transform)) continue;
+
+                ApplySpringBone(transform.gameObject, springBone);
+            }
+        }
+        
         static void ApplySpringBone(GameObject go, SpringBoneJoint springBone)
         {
             var component = go.AddComponent<SpringBoneJointComponent>();
