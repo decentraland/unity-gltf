@@ -64,6 +64,10 @@ namespace GLTFast.Editor
         HashSet<string> m_ImportedNames;
         HashSet<Object> m_ImportedObjects;
 
+        // static fields ensure that they dont get deleted after saving the importer
+        private static IMaterialGenerator customMaterialGenerator;
+        private static IEditorDownloadProvider customDownloadProvider;
+        
         // static string[] GatherDependenciesFromSourceFile(string path) {
         //     // Called before actual import for each changed asset that is imported by this importer type
         //     // Extract the dependencies for the asset specified in path.
@@ -73,11 +77,21 @@ namespace GLTFast.Editor
         //     return null;
         // }
 
+        public void SetupCustomMaterialGenerator(IMaterialGenerator materialGenerator)
+        {
+            customMaterialGenerator = materialGenerator;
+        }
+
+        public void SetupCustomGltfDownloadProvider(IEditorDownloadProvider downloadProvider)
+        {
+            customDownloadProvider = downloadProvider;
+        }
+        
         public override void OnImportAsset(AssetImportContext ctx)
         {
             reportItems = null;
 
-            var downloadProvider = new EditorDownloadProvider();
+            var downloadProvider = customDownloadProvider ?? new EditorDownloadProvider();
             var logger = new CollectingLogger();
 
             m_Gltf = new GltfImport(
@@ -87,6 +101,10 @@ namespace GLTFast.Editor
                 logger
             );
 
+            // we clean the overrides to avoid future imports with incorrect data
+            customDownloadProvider = null;
+            customMaterialGenerator = null;
+            
             if (editorImportSettings == null)
             {
                 // Design-time import specific settings
@@ -302,6 +320,37 @@ namespace GLTFast.Editor
             }
         }
 
+        protected virtual void PreProcessGameObjects(GameObject sceneGo)
+        {
+
+        }
+
+        protected virtual void CreateMaterialAssets(AssetImportContext ctx)
+        {
+            for (var i = 0; i < m_Gltf.MaterialCount; i++)
+            {
+                var mat = m_Gltf.GetMaterial(i);
+
+                // Overriding double-sided for GI baking
+                // Resolves problems with meshes that are not a closed
+                // volume at a potential minor cost of baking speed.
+                mat.doubleSidedGI = true;
+
+                if (mat != null)
+                {
+                    AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+                }
+            }
+
+            if (m_Gltf.defaultMaterial != null)
+            {
+                // If a default/fallback material was created, import it as well'
+                // to avoid (pink) objects without materials
+                var mat = m_Gltf.defaultMaterial;
+                AddObjectToAsset(ctx, $"materials/{mat.name}", mat);
+            }
+        }
+        
         void ImportScene(
             AssetImportContext ctx,
             int sceneIndex,
