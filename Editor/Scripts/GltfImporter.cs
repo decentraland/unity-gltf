@@ -47,7 +47,7 @@ namespace GLTFast.Editor
         EditorImportSettings editorImportSettings;
 
         [SerializeField]
-        ImportSettings importSettings;
+        public ImportSettings importSettings;
 
         [SerializeField]
         InstantiationSettings instantiationSettings;
