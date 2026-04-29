@@ -141,8 +141,6 @@ namespace GLTFast.Schema
         public MeshGpuInstancing EXT_mesh_gpu_instancing;
         /// <inheritdoc cref="LightsPunctual"/>
         public NodeLightsPunctual KHR_lights_punctual;
-        /// <inheritdoc cref="SpringBoneJoint"/>
-        public SpringBoneJoint DCL_spring_bone_joint;
 
         // Whenever an extension is added, the JsonParser
         // (specifically step four of JsonParser.ParseJson)
@@ -161,11 +159,6 @@ namespace GLTFast.Schema
             {
                 writer.AddProperty("KHR_lights_punctual");
                 KHR_lights_punctual.GltfSerialize(writer);
-            }
-            if (DCL_spring_bone_joint != null)
-            {
-                writer.AddProperty("DCL_spring_bone_joint");
-                DCL_spring_bone_joint.GltfSerialize(writer);
             }
             writer.Close();
         }
